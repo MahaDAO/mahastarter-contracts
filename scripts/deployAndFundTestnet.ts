@@ -66,12 +66,12 @@ async function main() {
     feeAmount,
     hasWhitelisting
   );
-  deploymentState.ScallopXFixedSwap = {
+  deploymentState.SCLPFixedSwap = {
     abi: "FixedSwap",
     address: fixedSwap.address,
   };
   console.log(`Verifying FixedSwap for the deployed MockERC20...`);
-  await verifyContract("ScallopXFixedSwap", deploymentState, [
+  await verifyContract("SCLPFixedSwap", deploymentState, [
     mockERC20.address,
     tradeValue,
     tokensForSale,
