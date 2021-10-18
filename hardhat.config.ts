@@ -10,7 +10,28 @@ import { HardhatUserConfig } from "hardhat/config";
 dotenv.config();
 
 const config: HardhatUserConfig = {
-  solidity: "0.5.8",
+  solidity: {
+    compilers: [
+      {
+        version: "0.5.8",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 100,
+          },
+        },
+      },
+      {
+        version: "0.8.0",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 100,
+          },
+        },
+      },
+    ],
+  },
   networks: {
     ropsten: {
       url: process.env.ROPSTEN_URL || "",
