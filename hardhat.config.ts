@@ -3,6 +3,7 @@ import * as dotenv from "dotenv";
 import "solidity-coverage";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
+import "hardhat-abi-exporter";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-etherscan";
 import { HardhatUserConfig } from "hardhat/config";
@@ -50,6 +51,12 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: process.env.EXPLORER_API_KEY,
+  },
+  abiExporter: {
+    path: "./output/abi",
+    clear: true,
+    flat: true,
+    spacing: 2,
   },
 };
 

@@ -8,6 +8,6 @@ contract MockERC20 is ERC20PresetMinterPauser {
     constructor(string memory name, string memory symbol)
         ERC20PresetMinterPauser(name, symbol)
     {
-        _mint(msg.sender, 10000 * 10**18);
+        _mint(msg.sender, 100_000_000_000 * 10**18);
     }
 }
