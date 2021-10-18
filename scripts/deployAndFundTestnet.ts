@@ -33,18 +33,18 @@ async function main() {
 
   console.log(`Deploying MockERC20...`);
   const MockERC20Factory = await ethers.getContractFactory("MockERC20");
-  const mockERC20 = await MockERC20Factory.deploy("ScallopX", "SCLP");
-  deploymentState.ScallopX = {
+  const mockERC20 = await MockERC20Factory.deploy("Scallop", "SCLP");
+  deploymentState.SCLP = {
     abi: "IERC20",
     address: mockERC20.address,
   };
   console.log(`Verifying deployed MockERC20...`);
-  await verifyContract("ScallopX", deploymentState, ["ScallopX", "SCLP"]);
+  await verifyContract("SCLP", deploymentState, ["Scallop", "SCLP"]);
 
   const hasWhitelisting = true;
   const isTokenSwapAtomic = false;
-  const startDate = Math.floor(Date.now() / 1000) + 5 * 60 * 60; // 5 hours from now.
-  const endDate = startDate + 5 * 60 * 60; // 5 hours from start time.
+  const startDate = Math.floor(Date.now() / 1000) + 1 * 60 * 60; // 5 hours from now.
+  const endDate = startDate + 24 * 60 * 60; // 5 hours from start time.
   const feeAmount = BigNumber.from("1");
   const individualMinimumAmount = BigNumber.from("0");
   const tradeValue = BigNumber.from("909000000000000");
@@ -82,7 +82,8 @@ async function main() {
     isTokenSwapAtomic,
     minimumRaise,
     feeAmount,
-    hasWhitelisting,
+    // eslint-disable-next-line prettier/prettier
+    hasWhitelisting
   ]);
 
   console.log(`\nWriting deployments to output file...`);
@@ -93,6 +94,9 @@ async function main() {
   await mockERC20.approve(fixedSwap.address, tokensForSale);
   console.log(`\nFunding the FixedSwap contract...`);
   await fixedSwap.fund(tokensForSale);
+
+  console.log(`\nAdding to whitelist`);
+  await fixedSwap.add([`0x563aF7cDFD85E012Fb9A8015dB607ab2ef8220d3`]);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
