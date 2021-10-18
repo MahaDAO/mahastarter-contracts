@@ -26,32 +26,32 @@ async function main() {
   // If this script is run directly using `node` you may want to call compile
   // manually to make sure everything is compiled
   // await hre.run('compile');
-  console.log(`\nBeginnning deployment script on network ${network.name}...`);
+  console.log(`\nBeginnning deployment script on network ${network.name.toUpperCase()}...\n`);
 
   const BigNumber = ethers.BigNumber;
   const deploymentState: any = {};
 
+  console.log(`Deploying MockERC20...`);
   const MockERC20Factory = await ethers.getContractFactory("MockERC20");
   const mockERC20 = await MockERC20Factory.deploy("ScallopX", "SCLP");
   deploymentState.ScallopX = {
     abi: "IERC20",
     address: mockERC20.address,
   };
+  console.log(`Verifying deployed MockERC20...`);
   await verifyContract("ScallopX", deploymentState, ["ScallopX", "SCLP"]);
 
   const hasWhitelisting = true;
   const isTokenSwapAtomic = false;
-
   const startDate = Math.floor(Date.now() / 1000) + 5 * 60 * 60; // 5 hours from now.
   const endDate = startDate + 5 * 60 * 60; // 5 hours from start time.
-
   const feeAmount = BigNumber.from("1");
   const individualMinimumAmount = BigNumber.from("0");
   const tradeValue = BigNumber.from("909000000000000");
   const minimumRaise = BigNumber.from("33000000000000000000000");
   const tokensForSale = BigNumber.from("125000000000000000000000");
   const individualMaximumAmount = BigNumber.from("418000000000000000000");
-
+  console.log(`\nDeploying FixedSwap for the deployed MockERC20...`);
   const FixedSwapFactory = await ethers.getContractFactory("FixedSwap");
   const fixedSwap = await FixedSwapFactory.deploy(
     mockERC20.address,
@@ -70,6 +70,7 @@ async function main() {
     abi: "FixedSwap",
     address: fixedSwap.address,
   };
+  console.log(`Verifying FixedSwap for the deployed MockERC20...`);
   await verifyContract("ScallopXFixedSwap", deploymentState, [
     mockERC20.address,
     tradeValue,
@@ -84,8 +85,14 @@ async function main() {
     hasWhitelisting,
   ]);
 
+  console.log(`\nWriting deployments to output file...`);
   const deploymentStateJSON = JSON.stringify(deploymentState, null, 2);
-  fs.writeFileSync(`./output/${network.name}.json`, deploymentStateJSON, { flag: "wx" });
+  fs.writeFileSync(`./output/${network.name}.json`, deploymentStateJSON);
+
+  console.log(`\nApproving MockERC20 tokens to fund the FixedSwap contract...`);
+  await mockERC20.approve(fixedSwap.address, tokensForSale);
+  console.log(`\nFunding the FixedSwap contract...`);
+  await fixedSwap.fund(tokensForSale);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
