@@ -3,10 +3,11 @@
 //
 // When running the script with `npx hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
-
 import * as fs from "fs";
 
 import hre, { ethers, network } from "hardhat";
+
+const BigNumber = ethers.BigNumber;
 
 async function verifyContract(name: string, deploymentState: any, constructorArguments: any[] = []) {
   try {
@@ -19,32 +20,21 @@ async function verifyContract(name: string, deploymentState: any, constructorArg
   }
 }
 
-async function main() {
-  // Hardhat always runs the compile task when running scripts with its command
-  // line interface.
-  //
-  // If this script is run directly using `node` you may want to call compile
-  // manually to make sure everything is compiled
-  // await hre.run('compile');
-  console.log(`\nBeginnning deployment script on network ${network.name.toUpperCase()}...\n`);
-
-  const BigNumber = ethers.BigNumber;
-  const deploymentState: any = {};
-
-  console.log(`Deploying MockERC20...`);
+async function deployToken(deploymentState: any, token: string, startTime: number) {
+  console.log(`\nDeploying MockERC20...`);
   const MockERC20Factory = await ethers.getContractFactory("MockERC20");
-  const mockERC20 = await MockERC20Factory.deploy("Scallop", "SCLP");
-  deploymentState.SCLP = {
+  const mockERC20 = await MockERC20Factory.deploy(token, token);
+  deploymentState[token] = {
     abi: "IERC20",
     address: mockERC20.address,
   };
   console.log(`Verifying deployed MockERC20...`);
-  await verifyContract("SCLP", deploymentState, ["Scallop", "SCLP"]);
+  await verifyContract(token, deploymentState, [token, token]);
 
   const hasWhitelisting = true;
   const isTokenSwapAtomic = false;
-  const startDate = Math.floor(Date.now() / 1000) + 2 * 60; // 5 hours from now.
-  const endDate = startDate + 5 * 60 * 60; // 5 hours from start time.
+  const startDate = startTime;
+  const endDate = startDate + 5 * 60 * 60;
   const feeAmount = BigNumber.from("1");
   const individualMinimumAmount = BigNumber.from("0");
   const tradeValue = BigNumber.from("909000000000000");
@@ -66,7 +56,7 @@ async function main() {
     feeAmount,
     hasWhitelisting
   );
-  deploymentState.SCLPFixedSwap = {
+  deploymentState[`${token}FixedSwap`] = {
     abi: "FixedSwap",
     address: fixedSwap.address,
   };
@@ -82,13 +72,8 @@ async function main() {
     isTokenSwapAtomic,
     minimumRaise,
     feeAmount,
-    // eslint-disable-next-line prettier/prettier
-    hasWhitelisting
+    hasWhitelisting,
   ]);
-
-  console.log(`\nWriting deployments to output file...`);
-  const deploymentStateJSON = JSON.stringify(deploymentState, null, 2);
-  fs.writeFileSync(`./output/${network.name}.json`, deploymentStateJSON);
 
   console.log(`\nApproving MockERC20 tokens to fund the FixedSwap contract...`);
   await mockERC20.approve(fixedSwap.address, tokensForSale);
@@ -98,6 +83,36 @@ async function main() {
   console.log(`\nAdding to whitelist`);
   const whilelistAddresses = process.env.WHITELIST_ADDRESSES?.split(`,`) || [];
   await fixedSwap.add([...whilelistAddresses]);
+}
+
+async function main() {
+  // Hardhat always runs the compile task when running scripts with its command
+  // line interface.
+  //
+  // If this script is run directly using `node` you may want to call compile
+  // manually to make sure everything is compiled
+  // await hre.run('compile');
+  console.log(`\nBeginnning deployment script on network ${network.name.toUpperCase()}...\n`);
+
+  const tokensAndStartTimes = [
+    {
+      token: `SCLP`,
+      startTime: Math.floor(Date.now()) + 1 * 30 * 60,
+    },
+    {
+      token: `MAHAX`,
+      startTime: Math.floor(Date.now()) + 15 * 60,
+    },
+  ];
+  const deploymentState: any = {};
+
+  for (const token of tokensAndStartTimes) {
+    await deployToken(deploymentState, token.token, token.startTime);
+  }
+
+  console.log(`\nWriting deployments to output file...`);
+  const deploymentStateJSON = JSON.stringify(deploymentState, null, 2);
+  fs.writeFileSync(`./output/${network.name}.json`, deploymentStateJSON);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
