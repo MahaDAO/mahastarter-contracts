@@ -53,7 +53,7 @@ async function deployToken(deploymentState: any, token: string, startTime: numbe
     individualMaximumAmount,
     isTokenSwapAtomic,
     minimumRaise,
-    feeAmount,
+    //feeAmount,
     hasWhitelisting
   );
   deploymentState[`${token}FixedSwap`] = {

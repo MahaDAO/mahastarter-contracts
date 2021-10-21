@@ -375,7 +375,7 @@ contract FixedSwap is Pausable, Whitelist {
     bool public isTokenSwapAtomic; /* Make token release atomic or not */
     address payable public FEE_ADDRESS =
         0xAEb39b67F27b641Ef9F95fB74F1A46b1EE4Efc83; /* Default Address for Fee Percentage */
-    uint256 public feePercentage = 1; /* Default Fee 1% */
+    //uint256 public feePercentage = 1; /* Default Fee 1% */
 
     struct Purchase {
         uint256 amount;
@@ -402,7 +402,7 @@ contract FixedSwap is Pausable, Whitelist {
         uint256 _individualMaximumAmount,
         bool _isTokenSwapAtomic,
         uint256 _minimumRaise,
-        uint256 _feeAmount,
+        //uint256 _feeAmount,
         bool _hasWhitelisting
     ) public Whitelist(_hasWhitelisting) {
         /* Confirmations */
@@ -428,8 +428,8 @@ contract FixedSwap is Pausable, Whitelist {
             _minimumRaise <= _tokensForSale,
             "Minimum Raise should be < Tokens For Sale"
         );
-        require(_feeAmount >= feePercentage, "Fee Percentage has to be >= 1");
-        require(_feeAmount <= 99, "Fee Percentage has to be < 100");
+        //require(_feeAmount >= feePercentage, "Fee Percentage has to be >= 1");
+        //require(_feeAmount <= 99, "Fee Percentage has to be < 100");
 
         startDate = _startDate;
         endDate = _endDate;
@@ -447,7 +447,7 @@ contract FixedSwap is Pausable, Whitelist {
 
         erc20 = ERC20(_tokenAddress);
         decimals = erc20.decimals();
-        feePercentage = _feeAmount;
+        //feePercentage = _feeAmount;
     }
 
     /**
@@ -695,22 +695,38 @@ contract FixedSwap is Pausable, Whitelist {
     }
 
     /* Redeem tokens when the sale was finalized */
-    function redeemTokens(uint256 purchase_id)
+    function redeemTokens()
         external
         isNotAtomicSwap
         isSaleFinalized
         whenNotPaused
     {
         /* Confirm it exists and was not finalized */
+        uint256[] memory _purchases = getMyPurchases(msg.sender);
+        uint256 _redeemAmount;
+
+        for(uint256 i = 0; i <= _purchases.length; i++) {
+            
+            if(
+                purchases[_purchases[i]].amount != 0 && 
+                purchases[_purchases[i]].wasFinalized == false &&
+                msg.sender == purchases[_purchases[i]].purchaser
+            ) {
+                purchases[_purchases[i]].wasFinalized = true;
+                _redeemAmount = _redeemAmount + purchases[_purchases[i]].amount;
+            }
+
+            // require(
+            //     (purchases[_purchases[i]].amount != 0) &&
+            //         !purchases[_purchases[i].wasFinalized,
+            //     "Purchase is either 0 or finalized"
+            // );
+            // require(isBuyer(_purchases[i), "Address is not buyer");
+            // purchases[_purchases[i].wasFinalized = true;
+        }
+
         require(
-            (purchases[purchase_id].amount != 0) &&
-                !purchases[purchase_id].wasFinalized,
-            "Purchase is either 0 or finalized"
-        );
-        require(isBuyer(purchase_id), "Address is not buyer");
-        purchases[purchase_id].wasFinalized = true;
-        require(
-            erc20.transfer(msg.sender, purchases[purchase_id].amount),
+            erc20.transfer(msg.sender, _redeemAmount),
             "ERC20 transfer failed"
         );
     }
@@ -738,7 +754,7 @@ contract FixedSwap is Pausable, Whitelist {
     /* Admin Functions */
     function withdrawFunds() external onlyOwner whenNotPaused isSaleFinalized {
         require(minimumRaiseAchieved(), "Minimum raise has to be reached");
-        FEE_ADDRESS.transfer(address(this).balance.mul(feePercentage).div(100)); /* Fee Address */
+        //FEE_ADDRESS.transfer(address(this).balance.mul(feePercentage).div(100)); /* Fee Address */
         msg.sender.transfer(address(this).balance);
     }
 
