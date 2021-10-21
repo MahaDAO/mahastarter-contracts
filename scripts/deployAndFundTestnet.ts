@@ -43,8 +43,8 @@ async function main() {
 
   const hasWhitelisting = true;
   const isTokenSwapAtomic = false;
-  const startDate = Math.floor(Date.now() / 1000) + 1 * 60; // 5 hours from now.
-  const endDate = startDate + 2 * 60 * 60; // 5 hours from start time.
+  const startDate = Math.floor(Date.now() / 1000) + 2 * 60; // 5 hours from now.
+  const endDate = startDate + 5 * 60 * 60; // 5 hours from start time.
   const feeAmount = BigNumber.from("1");
   const individualMinimumAmount = BigNumber.from("0");
   const tradeValue = BigNumber.from("909000000000000");
@@ -97,7 +97,7 @@ async function main() {
 
   console.log(`\nAdding to whitelist`);
   const whilelistAddresses = process.env.WHITELIST_ADDRESSES?.split(`,`) || [];
-  await fixedSwap.add(whilelistAddresses);
+  await fixedSwap.add([...whilelistAddresses]);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
