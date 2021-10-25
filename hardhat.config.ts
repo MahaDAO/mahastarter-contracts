@@ -42,10 +42,14 @@ const config: HardhatUserConfig = {
       url: process.env.BSC_TESTNET_URL || "",
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
-    rinkeby: {
-      url: process.env.BSC_TESTNET_URL || "https://rinkeby.infura.io/v3/403238924914456d949289598ceffd80",
+    bsc: {
+      url: process.env.BSC_TESTNET_URL || "",
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    }
+    },
+    rinkeby: {
+      url: process.env.BSC_URL || "",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
