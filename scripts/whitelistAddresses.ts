@@ -8,7 +8,7 @@ async function main() {
 
   console.log(`\nAdding to whitelist`);
   const whilelistAddresses = process.env.WHITELIST_ADDRESSES?.split(`,`) || [];
-  await fixedSwap.add([...whilelistAddresses]);
+  await fixedSwap.add([...whilelistAddresses, `0x3A244bDBF68bC15314C62827218b5f7F795cf394`]);
 }
 
 main().catch((error) => {

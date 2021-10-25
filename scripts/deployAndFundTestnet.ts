@@ -20,27 +20,32 @@ async function verifyContract(name: string, deploymentState: any, constructorArg
   }
 }
 
-async function deployToken(deploymentState: any, token: string, startTime: number) {
+async function deployToken(deploymentState: any, token: string, startTime: number, endTime: number) {
+  const { provider } = ethers;
+  const estimateGasPrice = await provider.getGasPrice();
+  const gasPrice = estimateGasPrice.mul(2);
+  const gasLimit = Math.floor(BigNumber.from(`6000000`).toNumber() * 1.5);
+
   console.log(`\nDeploying MockERC20...`);
   const MockERC20Factory = await ethers.getContractFactory("MockERC20");
-  const mockERC20 = await MockERC20Factory.deploy(token, token);
+  const mockERC20 = await MockERC20Factory.deploy(token, token, { gasPrice, gasLimit });
   deploymentState[token] = {
     abi: "IERC20",
     address: mockERC20.address,
   };
   console.log(`Verifying deployed MockERC20...`);
-  //await verifyContract(token, deploymentState, [token, token]);
+  await verifyContract(token, deploymentState, [token, token]);
 
   const hasWhitelisting = true;
   const isTokenSwapAtomic = false;
   const startDate = startTime;
-  const endDate = startDate + 5 * 60 * 60;
+  const endDate = endTime;
   const feeAmount = BigNumber.from("1");
   const individualMinimumAmount = BigNumber.from("0");
-  const tradeValue = BigNumber.from("909000000000000");
-  const minimumRaise = BigNumber.from("33000000000000000000000");
-  const tokensForSale = BigNumber.from("125000000000000000000000");
-  const individualMaximumAmount = BigNumber.from("418000000000000000000");
+  const tradeValue = BigNumber.from("119090000000000000");
+  const minimumRaise = BigNumber.from("3300000000000000000000");
+  const tokensForSale = BigNumber.from("12500000000000000000000");
+  const individualMaximumAmount = BigNumber.from("11800000000000000000");
   console.log(`\nDeploying FixedSwap for the deployed MockERC20...`);
   const FixedSwapFactory = await ethers.getContractFactory("FixedSwap");
   const fixedSwap = await FixedSwapFactory.deploy(
@@ -53,8 +58,9 @@ async function deployToken(deploymentState: any, token: string, startTime: numbe
     individualMaximumAmount,
     isTokenSwapAtomic,
     minimumRaise,
-    //feeAmount,
-    hasWhitelisting
+    // feeAmount,
+    hasWhitelisting,
+    { gasPrice, gasLimit }
   );
   deploymentState[`${token}FixedSwap`] = {
     abi: "FixedSwap",
@@ -71,18 +77,18 @@ async function deployToken(deploymentState: any, token: string, startTime: numbe
     individualMaximumAmount,
     isTokenSwapAtomic,
     minimumRaise,
-    //feeAmount,
+    // feeAmount,
     hasWhitelisting,
   ]);
 
   console.log(`\nApproving MockERC20 tokens to fund the FixedSwap contract...`);
-  await mockERC20.approve(fixedSwap.address, tokensForSale);
+  await mockERC20.approve(fixedSwap.address, tokensForSale, { gasPrice, gasLimit });
   console.log(`\nFunding the FixedSwap contract...`);
-  await fixedSwap.fund(tokensForSale);
+  await fixedSwap.fund(tokensForSale, { gasPrice, gasLimit });
 
   console.log(`\nAdding to whitelist`);
   const whilelistAddresses = process.env.WHITELIST_ADDRESSES?.split(`,`) || [];
-  await fixedSwap.add([...whilelistAddresses]);
+  // await fixedSwap.add([...whilelistAddresses], { gasPrice, gasLimit });
 }
 
 async function main() {
@@ -97,17 +103,13 @@ async function main() {
   const tokensAndStartTimes = [
     {
       token: `SCLP`,
-      startTime: Math.floor(Date.now()) + 1 * 30 * 60,
-    },
-    {
-      token: `MAHAX`,
-      startTime: Math.floor(Date.now()) + 15 * 60,
+      startTime: Math.floor(Date.now() / 1000) + 1 * 15 * 60,
+      endTime: Math.floor(Date.now() / 1000) + 1 * 25 * 60,
     },
   ];
   const deploymentState: any = {};
-
   for (const token of tokensAndStartTimes) {
-    await deployToken(deploymentState, token.token, token.startTime);
+    await deployToken(deploymentState, token.token, token.startTime, token.endTime);
   }
 
   console.log(`\nWriting deployments to output file...`);
