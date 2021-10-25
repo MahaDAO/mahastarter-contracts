@@ -20,27 +20,32 @@ async function verifyContract(name: string, deploymentState: any, constructorArg
   }
 }
 
-async function deployToken(deploymentState: any, token: string, startTime: number, endTime: number) {
+async function deployToken(deploymentState: any, id: string, token: string, startTime: number, endTime: number) {
   const { provider } = ethers;
+
   const estimateGasPrice = await provider.getGasPrice();
   const gasPrice = estimateGasPrice.mul(2);
   const gasLimit = Math.floor(BigNumber.from(`6000000`).toNumber() * 1.5);
 
   console.log(`\nDeploying MockERC20...`);
-  const MockERC20Factory = await ethers.getContractFactory("MockERC20");
-  const mockERC20 = await MockERC20Factory.deploy(token, token, { gasPrice, gasLimit });
-  deploymentState[token] = {
-    abi: "IERC20",
-    address: mockERC20.address,
-  };
-  console.log(`Verifying deployed MockERC20...`);
-  await verifyContract(token, deploymentState, [token, token]);
+  let mockERC20;
+  if (!deploymentState[token]) {
+    const MockERC20Factory = await ethers.getContractFactory("MockERC20");
+    mockERC20 = await MockERC20Factory.deploy(token, token, { gasPrice, gasLimit });
+    deploymentState[token] = {
+      abi: "IERC20",
+      address: mockERC20.address,
+    };
+    console.log(`Verifying deployed MockERC20...`);
+    await verifyContract(token, deploymentState, [token, token]);
+  } else {
+    mockERC20 = await ethers.getContractAt("MockERC20", deploymentState[token].address);
+  }
 
   const hasWhitelisting = true;
   const isTokenSwapAtomic = false;
   const startDate = startTime;
   const endDate = endTime;
-  const feeAmount = BigNumber.from("1");
   const individualMinimumAmount = BigNumber.from("0");
   const tradeValue = BigNumber.from("119090000000000000");
   const minimumRaise = BigNumber.from("3300000000000000000000");
@@ -58,16 +63,15 @@ async function deployToken(deploymentState: any, token: string, startTime: numbe
     individualMaximumAmount,
     isTokenSwapAtomic,
     minimumRaise,
-    // feeAmount,
     hasWhitelisting,
     { gasPrice, gasLimit }
   );
-  deploymentState[`${token}FixedSwap`] = {
+  deploymentState[`${token}${id}FixedSwap`] = {
     abi: "FixedSwap",
     address: fixedSwap.address,
   };
   console.log(`Verifying FixedSwap for the deployed MockERC20...`);
-  await verifyContract("SCLPFixedSwap", deploymentState, [
+  await verifyContract(`${token}${id}FixedSwap`, deploymentState, [
     mockERC20.address,
     tradeValue,
     tokensForSale,
@@ -77,7 +81,6 @@ async function deployToken(deploymentState: any, token: string, startTime: numbe
     individualMaximumAmount,
     isTokenSwapAtomic,
     minimumRaise,
-    // feeAmount,
     hasWhitelisting,
   ]);
 
@@ -85,10 +88,6 @@ async function deployToken(deploymentState: any, token: string, startTime: numbe
   await mockERC20.approve(fixedSwap.address, tokensForSale, { gasPrice, gasLimit });
   console.log(`\nFunding the FixedSwap contract...`);
   await fixedSwap.fund(tokensForSale, { gasPrice, gasLimit });
-
-  console.log(`\nAdding to whitelist`);
-  const whilelistAddresses = process.env.WHITELIST_ADDRESSES?.split(`,`) || [];
-  // await fixedSwap.add([...whilelistAddresses], { gasPrice, gasLimit });
 }
 
 async function main() {
@@ -103,13 +102,20 @@ async function main() {
   const tokensAndStartTimes = [
     {
       token: `SCLP`,
-      startTime: Math.floor(Date.now() / 1000) + 1 * 15 * 60,
-      endTime: Math.floor(Date.now() / 1000) + 1 * 25 * 60,
+      id: `scallop`,
+      startTime: Math.floor(Date.now() / 1000) + 1 * 2 * 60,
+      endTime: Math.floor(Date.now() / 1000) + 1 * 10 * 60,
+    },
+    {
+      token: `SCLP`,
+      id: `scallopmahax`,
+      startTime: Math.floor(Date.now() / 1000) + 1 * 2 * 60,
+      endTime: Math.floor(Date.now() / 1000) + 1 * 10 * 60,
     },
   ];
   const deploymentState: any = {};
   for (const token of tokensAndStartTimes) {
-    await deployToken(deploymentState, token.token, token.startTime, token.endTime);
+    await deployToken(deploymentState, token.id, token.token, token.startTime, token.endTime);
   }
 
   console.log(`\nWriting deployments to output file...`);
