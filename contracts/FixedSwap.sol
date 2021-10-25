@@ -359,7 +359,6 @@ contract FixedSwap is Pausable, Whitelist {
     address[] public buyers; /* Current Buyers Addresses */
     uint256[] public purchaseIds; /* All purchaseIds */
     mapping(address => uint256[]) public myPurchases; /* Purchasers mapping */
-    mapping(address => VestingClaim) public usersVesting;
 
     ERC20 public erc20;
     bool public isSaleFunded = false;
@@ -385,14 +384,6 @@ contract FixedSwap is Pausable, Whitelist {
         uint256 timestamp;
         bool wasFinalized; /* Confirm the tokens were sent already */
         bool reverted; /* Confirm the tokens were sent already */
-    }
-
-    struct VestingClaim {
-        address purchaser;
-        uint256 amount;
-        uint256 vestedAt;
-        uint256 lastClaimedAt;
-        bool wasFinalized;
     }
 
     event PurchaseEvent(
@@ -733,164 +724,10 @@ contract FixedSwap is Pausable, Whitelist {
             // purchases[_purchases[i].wasFinalized = true;
         }
 
-        uint256 upfrontClaim = _redeemAmount * 40 / 100;
-        uint256 vestedClaim = _redeemAmount - upfrontClaim;
-
-        if (upfrontClaim > 0 && _redeemAmount > 0) {
-            usersVesting[msg.sender] = VestingClaim(
-                msg.sender, 
-                vestedClaim, 
-                block.timestamp,
-                0,
-                false
-            );
-        }
-
         require(
-            erc20.transfer(msg.sender, upfrontClaim),
+            erc20.transfer(msg.sender, _redeemAmount),
             "ERC20 transfer failed"
         );
-    }
-
-    function claimVesting() external {
-        VestingClaim memory vestingClaim = usersVesting[msg.sender];
-        
-        require(
-            vestingClaim.amount > 0,
-            "Noting to claim"
-        );
-
-        // if (block.timestamp > vestingClaim.vestedAt + 30 days) {
-        //     return 'greater then 30 days give 20%';
-        // } else if (block.timestamp  > vestingClaim.vestedAt + 60 days) {
-        //     return 'greater then 60 days give 40%'; 
-        // } else if (block.timestamp  > vestingClaim.vestedAt + 90 days) {
-        //     return 'greater then 90 days give 60%'; 
-        // } else {
-        //     return 'fuck';
-        // }
-        
-        if (
-            vestingClaim.lastClaimedAt == 0 && 
-            block.timestamp  > vestingClaim.vestedAt + 1 minutes &&
-            block.timestamp < vestingClaim.vestedAt + 2 minutes
-        ) {
-            uint256 redeemAmount = vestingClaim.amount * 20 / 100;
-           
-            vestingClaim.amount = vestingClaim.amount - redeemAmount;
-            vestingClaim.lastClaimedAt = block.timestamp;
-            usersVesting[msg.sender] = vestingClaim;
-            
-            erc20.transfer(msg.sender, redeemAmount);
-        } else if (
-            vestingClaim.lastClaimedAt == 0 && 
-            block.timestamp  > vestingClaim.vestedAt + 2 minutes &&
-            block.timestamp < vestingClaim.vestedAt + 3 minutes
-        ){
-            uint256 redeemAmount = vestingClaim.amount * 40 / 100;
-           
-            vestingClaim.amount = vestingClaim.amount - redeemAmount;
-            vestingClaim.lastClaimedAt = block.timestamp;
-            usersVesting[msg.sender] = vestingClaim;
-            
-            erc20.transfer(msg.sender, redeemAmount);
-        } else if (
-            vestingClaim.lastClaimedAt == 0 && 
-            block.timestamp  > vestingClaim.vestedAt + 3 minutes &&
-            block.timestamp < vestingClaim.vestedAt + 4 minutes
-        ){
-            uint256 redeemAmount = vestingClaim.amount * 60 / 100;
-           
-            vestingClaim.amount = vestingClaim.amount - redeemAmount;
-            vestingClaim.lastClaimedAt = block.timestamp;
-            usersVesting[msg.sender] = vestingClaim;
-            
-            erc20.transfer(msg.sender, redeemAmount);
-        } else if (
-            vestingClaim.lastClaimedAt == 0 && 
-            block.timestamp  > vestingClaim.vestedAt + 4 minutes &&
-            block.timestamp < vestingClaim.vestedAt + 5 minutes
-        ){
-            uint256 redeemAmount = vestingClaim.amount * 80 / 100;
-           
-            vestingClaim.amount = vestingClaim.amount - redeemAmount;
-            vestingClaim.lastClaimedAt = block.timestamp;
-            usersVesting[msg.sender] = vestingClaim;
-            
-            erc20.transfer(msg.sender, redeemAmount);
-        } else if (
-            vestingClaim.lastClaimedAt == 0 && 
-            block.timestamp  > vestingClaim.vestedAt + 5 minutes
-        ){
-            uint256 redeemAmount = vestingClaim.amount;
-           
-            vestingClaim.amount = vestingClaim.amount - redeemAmount;
-            vestingClaim.lastClaimedAt = block.timestamp;
-            usersVesting[msg.sender] = vestingClaim;
-            
-            erc20.transfer(msg.sender, redeemAmount); 
-        } 
-        
-        if (
-            vestingClaim.lastClaimedAt > 0 && 
-            block.timestamp  > vestingClaim.lastClaimedAt + 2 minutes &&
-            block.timestamp < vestingClaim.lastClaimedAt + 3 minutes
-        ) {
-            uint256 redeemAmount = vestingClaim.amount * 20 / 100;
-           
-            vestingClaim.amount = vestingClaim.amount - redeemAmount;
-            vestingClaim.lastClaimedAt = block.timestamp;
-            usersVesting[msg.sender] = vestingClaim;
-            
-            erc20.transfer(msg.sender, redeemAmount); 
-        } else if (
-            vestingClaim.lastClaimedAt > 0 && 
-            block.timestamp  > vestingClaim.lastClaimedAt + 3 minutes &&
-            block.timestamp < vestingClaim.lastClaimedAt + 4 minutes
-        ) {
-            uint256 redeemAmount = vestingClaim.amount * 40 / 100;
-           
-            vestingClaim.amount = vestingClaim.amount - redeemAmount;
-            vestingClaim.lastClaimedAt = block.timestamp;
-            usersVesting[msg.sender] = vestingClaim;
-            
-            erc20.transfer(msg.sender, redeemAmount); 
-        } else if (
-            vestingClaim.lastClaimedAt > 0 && 
-            block.timestamp  > vestingClaim.lastClaimedAt + 4 minutes &&
-            block.timestamp < vestingClaim.lastClaimedAt + 5 minutes
-        ) {
-            uint256 redeemAmount = vestingClaim.amount * 60 / 100;
-           
-            vestingClaim.amount = vestingClaim.amount - redeemAmount;
-            vestingClaim.lastClaimedAt = block.timestamp;
-            usersVesting[msg.sender] = vestingClaim;
-            
-            erc20.transfer(msg.sender, redeemAmount); 
-        } else if (
-            vestingClaim.lastClaimedAt > 0 && 
-            block.timestamp  > vestingClaim.lastClaimedAt + 5 minutes &&
-            block.timestamp < vestingClaim.lastClaimedAt + 6 minutes
-        ) {
-            uint256 redeemAmount = vestingClaim.amount * 80 / 100;
-           
-            vestingClaim.amount = vestingClaim.amount - redeemAmount;
-            vestingClaim.lastClaimedAt = block.timestamp;
-            usersVesting[msg.sender] = vestingClaim;
-            
-            erc20.transfer(msg.sender, redeemAmount); 
-        } else if (
-            vestingClaim.lastClaimedAt > 0 && 
-            block.timestamp  > vestingClaim.lastClaimedAt + 6 minutes
-        ) {
-            uint256 redeemAmount = vestingClaim.amount;
-           
-            vestingClaim.amount = vestingClaim.amount - redeemAmount;
-            vestingClaim.lastClaimedAt = block.timestamp;
-            usersVesting[msg.sender] = vestingClaim;
-            
-            erc20.transfer(msg.sender, redeemAmount); 
-        } 
     }
 
     /* Retrieve Minumum Amount */
