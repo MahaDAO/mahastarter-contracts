@@ -29,7 +29,7 @@ async function deployToken(deploymentState: any, token: string, startTime: numbe
     address: mockERC20.address,
   };
   console.log(`Verifying deployed MockERC20...`);
-  await verifyContract(token, deploymentState, [token, token]);
+  //await verifyContract(token, deploymentState, [token, token]);
 
   const hasWhitelisting = true;
   const isTokenSwapAtomic = false;
@@ -71,7 +71,7 @@ async function deployToken(deploymentState: any, token: string, startTime: numbe
     individualMaximumAmount,
     isTokenSwapAtomic,
     minimumRaise,
-    feeAmount,
+    //feeAmount,
     hasWhitelisting,
   ]);
 

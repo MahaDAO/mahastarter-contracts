@@ -6,7 +6,8 @@
   },
   "scripts": {
     "compile": "hardhat compile",
-    "deploy:bscTestnet": "npx hardhat run scripts/deployAndFundTestnet.ts --network bscTestnet"
+    "deploy:bscTestnet": "npx hardhat run scripts/deployAndFundTestnet.ts --network bscTestnet",
+    "deploy:rinkeby": "npx hardhat run scripts/deployAndFundTestnet.ts --network rinkeby"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
