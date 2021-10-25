@@ -6,6 +6,7 @@
   },
   "scripts": {
     "compile": "hardhat compile",
+    "deploy:bsc": "npx hardhat run scripts/deployAndFundTestnet.ts --network bsc",
     "deploy:bscTestnet": "npx hardhat run scripts/deployAndFundTestnet.ts --network bscTestnet",
     "deploy:rinkeby": "npx hardhat run scripts/deployAndFundTestnet.ts --network rinkeby"
   },
