@@ -1,7 +1,7 @@
 import { ethers, network } from "hardhat";
 
 async function main() {
-  console.log(`\nBeginnning Whitelisting script on network ${network.name.toUpperCase()}...\n`);
+  console.log(`\nBeginnning Whitelisting script on network ${network.name}...\n`);
 
   const deployment = require(`../output/${network.name}.json`);
   const contractKeys: string[] = Object.values(deployment);
