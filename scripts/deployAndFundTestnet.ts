@@ -20,7 +20,14 @@ async function verifyContract(name: string, deploymentState: any, constructorArg
   }
 }
 
-async function deployToken(deploymentState: any, id: string, token: string, startTime: number, endTime: number) {
+async function deployToken(
+  deploymentState: any,
+  id: string,
+  token: string,
+  startTime: number,
+  endTime: number,
+  obj: any
+) {
   const { provider } = ethers;
 
   const estimateGasPrice = await provider.getGasPrice();
@@ -48,8 +55,8 @@ async function deployToken(deploymentState: any, id: string, token: string, star
   const endDate = endTime;
   const individualMinimumAmount = BigNumber.from("0");
   const tradeValue = BigNumber.from("119090000000000000");
-  const minimumRaise = BigNumber.from("3300000000000000000000");
-  const tokensForSale = BigNumber.from("12500000000000000000000");
+  const minimumRaise = BigNumber.from("3300000000000000000");
+  const tokensForSale = BigNumber.from("12500000000000000000");
   const individualMaximumAmount = BigNumber.from("11800000000000000000");
   console.log(`\nDeploying FixedSwap for the deployed MockERC20...`);
   const FixedSwapFactory = await ethers.getContractFactory("FixedSwap");
@@ -66,28 +73,30 @@ async function deployToken(deploymentState: any, id: string, token: string, star
     hasWhitelisting,
     { gasPrice, gasLimit }
   );
+  await fixedSwap.deployed();
   deploymentState[`${token}${id}FixedSwap`] = {
     abi: "FixedSwap",
     address: fixedSwap.address,
   };
+
   console.log(`Verifying FixedSwap for the deployed MockERC20...`);
   await verifyContract(`${token}${id}FixedSwap`, deploymentState, [
     mockERC20.address,
-    tradeValue,
-    tokensForSale,
+    obj.tradeValue,
+    obj.tokensForSale,
     startDate,
     endDate,
-    individualMinimumAmount,
-    individualMaximumAmount,
+    obj.individualMinimumAmount,
+    obj.individualMaximumAmount,
     isTokenSwapAtomic,
-    minimumRaise,
+    obj.minimumRaise,
     hasWhitelisting,
   ]);
 
   console.log(`\nApproving MockERC20 tokens to fund the FixedSwap contract...`);
-  await mockERC20.approve(fixedSwap.address, tokensForSale, { gasPrice, gasLimit });
+  await mockERC20.approve(fixedSwap.address, obj.tokensForSale, { gasPrice, gasLimit });
   console.log(`\nFunding the FixedSwap contract...`);
-  await fixedSwap.fund(tokensForSale, { gasPrice, gasLimit });
+  await fixedSwap.fund(obj.tokensForSale, { gasPrice, gasLimit });
 }
 
 async function main() {
@@ -103,19 +112,30 @@ async function main() {
     {
       token: `SCLP`,
       id: `scallop`,
-      startTime: Math.floor(Date.now() / 1000) + 1 * 2 * 60,
-      endTime: Math.floor(Date.now() / 1000) + 1 * 10 * 60,
+      startTime: Math.floor(Date.now() / 1000) + 1 * 20 * 60,
+      endTime: Math.floor(Date.now() / 1000) + 1 * (20 + 15) * 60,
+      tradeValue: BigNumber.from("1000000000000000000").mul(490).mul(100).div(15),
+      minimumRaise: BigNumber.from("5000000000000000000").mul(100).div(15),
+      tokensForSale: BigNumber.from("125000000000000000000000").mul(100).div(15),
+      individualMinimumAmount: BigNumber.from("0").mul(100).div(15),
+      individualMaximumAmount: BigNumber.from("500000000000000000000").mul(100).div(15),
     },
     {
       token: `SCLP`,
       id: `scallopmahax`,
-      startTime: Math.floor(Date.now() / 1000) + 1 * 2 * 60,
-      endTime: Math.floor(Date.now() / 1000) + 1 * 10 * 60,
-    },
+      startTime: Math.floor(Date.now() / 1000) + 1 * 20 * 60,
+      endTime: Math.floor(Date.now() / 1000) + 1 * (20 + 15) * 60,
+      tradeValue: BigNumber.from("1000000000000000000").mul(490).mul(100).div(15),
+      minimumRaise: BigNumber.from("5000000000000000000").mul(100).div(15),
+      tokensForSale: BigNumber.from("125000000000000000000000").mul(100).div(15),
+      individualMinimumAmount: BigNumber.from("0").mul(100).div(15),
+      individualMaximumAmount: BigNumber.from("1000000000000000000000").mul(100).div(15),
+    }
   ];
+
   const deploymentState: any = {};
   for (const token of tokensAndStartTimes) {
-    await deployToken(deploymentState, token.id, token.token, token.startTime, token.endTime);
+    await deployToken(deploymentState, token.id, token.token, token.startTime, token.endTime, token);
   }
 
   console.log(`\nWriting deployments to output file...`);
@@ -123,8 +143,6 @@ async function main() {
   fs.writeFileSync(`./output/${network.name}.json`, deploymentStateJSON);
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
