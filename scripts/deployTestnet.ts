@@ -103,32 +103,32 @@ async function main() {
       key: "SCLPscallopFixedSwap", // Combination of token in caps and id used in ui in lowercap.
       token: "SCLP",
       fixedSwap: {
-        tradeValue: utils.parseEther(`1`).mul(7653061224).div(1e10).div(1e3),
-        tokensForSale: utils.parseEther(`1`).mul(400000),
+        tradeValue: utils.parseEther(`1`).mul(7731958763).div(1e10).div(1e3),
+        tokensForSale: utils.parseEther(`1`).mul(373333),
         startDate: BigNumber.from(`${Math.floor(Date.now() / 1000) + 1 * 15 * 60}`),
-        endDate: BigNumber.from(`${Math.floor(Date.now() / 1000) + 1 * 50 * 60}`),
+        endDate: BigNumber.from(`${Math.floor(Date.now() / 1000) + 1 * 30 * 60}`),
         individualMinimumAmount: BigNumber.from(0),
-        individualMaximumAmount: BigNumber.from("500000000000000000000").mul(1000).div(375),
+        individualMaximumAmount: BigNumber.from("300000000000000000000").mul(1000).div(375),
         isTokenSwapAtomic: false,
-        minimumRaise: utils.parseEther(`1`).mul(200000),
+        minimumRaise: utils.parseEther(`0`),
         hasWhitelisting: true,
       },
     },
-    // {
-    //   key: "SCLPscallopmahaxFixedSwap", // Combination of token in caps and id used in ui in lowercap.
-    //   token: "SCLP",
-    //   fixedSwap: {
-    //     tradeValue: utils.parseEther(`1`).mul(7653061224).div(1e10).div(1e3),
-    //     tokensForSale: utils.parseEther(`1`).mul(400000),
-    //     startDate: BigNumber.from(`${Math.floor(Date.now() / 1000) + 1 * 15 * 60}`),
-    //     endDate: BigNumber.from(`${Math.floor(Date.now() / 1000) + 1 * 50 * 60}`),
-    //     individualMinimumAmount: BigNumber.from(0),
-    //     individualMaximumAmount: BigNumber.from("500000000000000000000").mul(1000).div(375),
-    //     isTokenSwapAtomic: false,
-    //     minimumRaise: utils.parseEther(`1`).mul(200000),
-    //     hasWhitelisting: true,
-    //   },
-    // },
+    {
+      key: "SCLPscallopmahaxFixedSwap", // Combination of token in caps and id used in ui in lowercap.
+      token: "SCLP",
+      fixedSwap: {
+        tradeValue: utils.parseEther(`1`).mul(7731958763).div(1e10).div(1e3),
+        tokensForSale: utils.parseEther(`1`).mul(160000),
+        startDate: BigNumber.from(`${Math.floor(Date.now() / 1000) + 1 * 2 * 60}`),
+        endDate: BigNumber.from(`${Math.floor(Date.now() / 1000) + 1 * 10 * 60}`),
+        individualMinimumAmount: BigNumber.from(0),
+        individualMaximumAmount: BigNumber.from("750000000000000000000").mul(1000).div(375),
+        isTokenSwapAtomic: false,
+        minimumRaise: utils.parseEther(`0`),
+        hasWhitelisting: true,
+      },
+    },
   ];
 
   for (const fixedSwapConfig of fixedSwapsConfig) {
