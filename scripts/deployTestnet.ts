@@ -68,6 +68,23 @@ async function deployFixedSwap(
   await verifyContract(fixedSwap.address, Object.values(constructorArgs));
 }
 
+async function fundFixedSwap(
+  key: string,
+  token: string,
+  deploymentState: DeploymentStateType,
+  constructorArgs: FixedSwapDeploymentType,
+  overrides: Overrides & { from?: string | Promise<string> }
+) {
+  const fixedSwap = await ethers.getContractAt("FixedSwap", deploymentState[key].address);
+  const erc20 = await ethers.getContractAt("MockERC20", deploymentState[token].address);
+
+  console.log(`\nApproving ERC20:${erc20.address} to fund FixedSwap:${fixedSwap.address}...`);
+  await erc20.approve(fixedSwap.address, constructorArgs.tokensForSale, overrides);
+
+  console.log(`\nFunding ERC20:${erc20.address} to fund FixedSwap:${fixedSwap.address}...`);
+  await fixedSwap.fund(constructorArgs.tokensForSale, overrides);
+}
+
 async function main() {
   const deploymentState: DeploymentStateType = {};
   const gasLimit = BigNumber.from(`6000000`).mul(15).div(10);
@@ -97,25 +114,30 @@ async function main() {
         hasWhitelisting: true,
       },
     },
-    {
-      key: "SCLPscallopmahaxFixedSwap", // Combination of token in caps and id used in ui in lowercap.
-      token: "SCLP",
-      fixedSwap: {
-        tradeValue: utils.parseEther(`1`).mul(7653061224).div(1e10).div(1e3),
-        tokensForSale: utils.parseEther(`1`).mul(400000),
-        startDate: BigNumber.from(`${Math.floor(Date.now() / 1000) + 1 * 15 * 60}`),
-        endDate: BigNumber.from(`${Math.floor(Date.now() / 1000) + 1 * 50 * 60}`),
-        individualMinimumAmount: BigNumber.from(0),
-        individualMaximumAmount: BigNumber.from("500000000000000000000").mul(1000).div(375),
-        isTokenSwapAtomic: false,
-        minimumRaise: utils.parseEther(`1`).mul(200000),
-        hasWhitelisting: true,
-      },
-    },
+    // {
+    //   key: "SCLPscallopmahaxFixedSwap", // Combination of token in caps and id used in ui in lowercap.
+    //   token: "SCLP",
+    //   fixedSwap: {
+    //     tradeValue: utils.parseEther(`1`).mul(7653061224).div(1e10).div(1e3),
+    //     tokensForSale: utils.parseEther(`1`).mul(400000),
+    //     startDate: BigNumber.from(`${Math.floor(Date.now() / 1000) + 1 * 15 * 60}`),
+    //     endDate: BigNumber.from(`${Math.floor(Date.now() / 1000) + 1 * 50 * 60}`),
+    //     individualMinimumAmount: BigNumber.from(0),
+    //     individualMaximumAmount: BigNumber.from("500000000000000000000").mul(1000).div(375),
+    //     isTokenSwapAtomic: false,
+    //     minimumRaise: utils.parseEther(`1`).mul(200000),
+    //     hasWhitelisting: true,
+    //   },
+    // },
   ];
 
   for (const fixedSwapConfig of fixedSwapsConfig) {
     await deployFixedSwap(fixedSwapConfig.key, fixedSwapConfig.token, deploymentState, fixedSwapConfig.fixedSwap, {
+      gasPrice,
+      gasLimit,
+    });
+
+    await fundFixedSwap(fixedSwapConfig.key, fixedSwapConfig.token, deploymentState, fixedSwapConfig.fixedSwap, {
       gasPrice,
       gasLimit,
     });
