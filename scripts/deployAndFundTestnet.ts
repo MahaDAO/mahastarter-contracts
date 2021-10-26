@@ -1,8 +1,4 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// When running the script with `npx hardhat run <script>` you'll find the Hardhat
-// Runtime Environment's members available in the global scope.
+import { utils } from "ethers";
 import * as fs from "fs";
 
 import hre, { ethers, network } from "hardhat";
@@ -53,23 +49,19 @@ async function deployToken(
   const isTokenSwapAtomic = false;
   const startDate = startTime;
   const endDate = endTime;
-  const individualMinimumAmount = BigNumber.from("0");
-  const tradeValue = BigNumber.from("119090000000000000");
-  const minimumRaise = BigNumber.from("3300000000000000000");
-  const tokensForSale = BigNumber.from("12500000000000000000");
-  const individualMaximumAmount = BigNumber.from("11800000000000000000");
+
   console.log(`\nDeploying FixedSwap for the deployed MockERC20...`);
   const FixedSwapFactory = await ethers.getContractFactory("FixedSwap");
   const fixedSwap = await FixedSwapFactory.deploy(
     mockERC20.address,
-    tradeValue,
-    tokensForSale,
+    obj.tradeValue,
+    obj.tokensForSale,
     startDate,
     endDate,
-    individualMinimumAmount,
-    individualMaximumAmount,
+    obj.individualMinimumAmount,
+    obj.individualMaximumAmount,
     isTokenSwapAtomic,
-    minimumRaise,
+    obj.minimumRaise,
     hasWhitelisting,
     { gasPrice, gasLimit }
   );
@@ -100,37 +92,20 @@ async function deployToken(
 }
 
 async function main() {
-  // Hardhat always runs the compile task when running scripts with its command
-  // line interface.
-  //
-  // If this script is run directly using `node` you may want to call compile
-  // manually to make sure everything is compiled
-  // await hre.run('compile');
   console.log(`\nBeginnning deployment script on network ${network.name.toUpperCase()}...\n`);
 
   const tokensAndStartTimes = [
     {
       token: `SCLP`,
       id: `scallop`,
-      startTime: Math.floor(Date.now() / 1000) + 1 * 20 * 60,
-      endTime: Math.floor(Date.now() / 1000) + 1 * (20 + 15) * 60,
-      tradeValue: BigNumber.from("1000000000000000000").mul(490).mul(100).div(15),
-      minimumRaise: BigNumber.from("5000000000000000000").mul(100).div(15),
-      tokensForSale: BigNumber.from("125000000000000000000000").mul(100).div(15),
-      individualMinimumAmount: BigNumber.from("0").mul(100).div(15),
-      individualMaximumAmount: BigNumber.from("500000000000000000000").mul(100).div(15),
+      startTime: Math.floor(Date.now() / 1000) + 1 * 5 * 60,
+      endTime: Math.floor(Date.now() / 1000) + 1 * (5 + 20) * 60,
+      tradeValue: utils.parseEther(`1`).mul(7653061224).div(1e10).div(1e3),
+      minimumRaise: utils.parseEther(`1`).mul(200000),
+      tokensForSale: utils.parseEther(`1`).mul(400000),
+      individualMinimumAmount: BigNumber.from("0"),
+      individualMaximumAmount: BigNumber.from("500000000000000000000").mul(1000).div(375),
     },
-    {
-      token: `SCLP`,
-      id: `scallopmahax`,
-      startTime: Math.floor(Date.now() / 1000) + 1 * 20 * 60,
-      endTime: Math.floor(Date.now() / 1000) + 1 * (20 + 15) * 60,
-      tradeValue: BigNumber.from("1000000000000000000").mul(490).mul(100).div(15),
-      minimumRaise: BigNumber.from("5000000000000000000").mul(100).div(15),
-      tokensForSale: BigNumber.from("125000000000000000000000").mul(100).div(15),
-      individualMinimumAmount: BigNumber.from("0").mul(100).div(15),
-      individualMaximumAmount: BigNumber.from("1000000000000000000000").mul(100).div(15),
-    }
   ];
 
   const deploymentState: any = {};
