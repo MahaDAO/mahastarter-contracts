@@ -1,116 +1,124 @@
-import { utils } from "ethers";
 import * as fs from "fs";
 
-import hre, { ethers, network } from "hardhat";
+import { ethers, network } from "hardhat";
+import { Contract, Overrides, utils, BigNumber } from "ethers";
 
-const BigNumber = ethers.BigNumber;
+import { verifyContract } from "./utils";
+import { DeploymentStateType, FixedSwapDeploymentType } from "./types";
 
-async function verifyContract(name: string, deploymentState: any, constructorArguments: any[] = []) {
-  try {
-    await hre.run("verify:verify", {
-      address: deploymentState[name].address,
-      constructorArguments,
-    });
-  } catch (error: any) {
-    console.error(`- Error verifying ${name}: ${error.name}`);
+const { provider } = ethers;
+
+async function deployMockERC20(
+  deploymentState: DeploymentStateType,
+  token: string,
+  overrides: Overrides & { from?: string | Promise<string> }
+) {
+  let mockERC20Contract: Contract;
+
+  if (!deploymentState[token]) {
+    const MockERC20Factory = await ethers.getContractFactory("MockERC20");
+    mockERC20Contract = await MockERC20Factory.deploy(token, token, overrides);
+
+    await mockERC20Contract.deployed();
+    console.log(`\nDeployed MockERC20 at ${mockERC20Contract.address}...`);
+
+    deploymentState[token] = {
+      abi: "IERC20",
+      address: mockERC20Contract.address,
+    };
+
+    await verifyContract(mockERC20Contract.address, [token, token]);
+  } else {
+    mockERC20Contract = await ethers.getContractAt("MockERC20", deploymentState[token].address);
   }
 }
 
-async function deployToken(
-  deploymentState: any,
-  id: string,
+async function deployFixedSwap(
+  key: string,
   token: string,
-  startTime: number,
-  endTime: number,
-  obj: any
+  deploymentState: DeploymentStateType,
+  constructorArgs: FixedSwapDeploymentType,
+  overrides: Overrides & { from?: string | Promise<string> }
 ) {
-  const { provider } = ethers;
-
-  const estimateGasPrice = await provider.getGasPrice();
-  const gasPrice = estimateGasPrice.mul(2);
-  const gasLimit = Math.floor(BigNumber.from(`6000000`).toNumber() * 1.5);
-
-  console.log(`\nDeploying MockERC20...`);
-  let mockERC20;
-  if (!deploymentState[token]) {
-    const MockERC20Factory = await ethers.getContractFactory("MockERC20");
-    mockERC20 = await MockERC20Factory.deploy(token, token, { gasPrice, gasLimit });
-    deploymentState[token] = {
-      abi: "IERC20",
-      address: mockERC20.address,
-    };
-    console.log(`Verifying deployed MockERC20...`);
-    await verifyContract(token, deploymentState, [token, token]);
-  } else {
-    mockERC20 = await ethers.getContractAt("MockERC20", deploymentState[token].address);
-  }
-
-  const hasWhitelisting = true;
-  const isTokenSwapAtomic = false;
-  const startDate = startTime;
-  const endDate = endTime;
-
-  console.log(`\nDeploying FixedSwap for the deployed MockERC20...`);
   const FixedSwapFactory = await ethers.getContractFactory("FixedSwap");
+
+  console.log(`\nDeploying FixedSwap with ERC20:${deploymentState[token].address}...`);
   const fixedSwap = await FixedSwapFactory.deploy(
-    mockERC20.address,
-    obj.tradeValue,
-    obj.tokensForSale,
-    startDate,
-    endDate,
-    obj.individualMinimumAmount,
-    obj.individualMaximumAmount,
-    isTokenSwapAtomic,
-    obj.minimumRaise,
-    hasWhitelisting,
-    { gasPrice, gasLimit }
+    deploymentState[token].address, // TODO hardcode/replace in mainnet deployment
+    constructorArgs.tradeValue,
+    constructorArgs.tokensForSale,
+    constructorArgs.startDate,
+    constructorArgs.endDate,
+    constructorArgs.individualMinimumAmount,
+    constructorArgs.individualMaximumAmount,
+    constructorArgs.isTokenSwapAtomic,
+    constructorArgs.minimumRaise,
+    constructorArgs.hasWhitelisting,
+    overrides
   );
+
   await fixedSwap.deployed();
-  deploymentState[`${token}${id}FixedSwap`] = {
-    abi: "FixedSwap",
+  console.log(`Deployed FixedSwap at ${fixedSwap.address}...`);
+
+  deploymentState[key] = {
+    abi: "IERC20",
     address: fixedSwap.address,
   };
 
-  console.log(`Verifying FixedSwap for the deployed MockERC20...`);
-  await verifyContract(`${token}${id}FixedSwap`, deploymentState, [
-    mockERC20.address,
-    obj.tradeValue,
-    obj.tokensForSale,
-    startDate,
-    endDate,
-    obj.individualMinimumAmount,
-    obj.individualMaximumAmount,
-    isTokenSwapAtomic,
-    obj.minimumRaise,
-    hasWhitelisting,
-  ]);
-
-  console.log(`\nApproving MockERC20 tokens to fund the FixedSwap contract...`);
-  await mockERC20.approve(fixedSwap.address, obj.tokensForSale, { gasPrice, gasLimit });
-  console.log(`\nFunding the FixedSwap contract...`);
-  await fixedSwap.fund(obj.tokensForSale, { gasPrice, gasLimit });
+  await verifyContract(fixedSwap.address, Object.values(constructorArgs));
 }
 
 async function main() {
-  console.log(`\nBeginnning deployment script on network ${network.name.toUpperCase()}...\n`);
+  const deploymentState: DeploymentStateType = {};
+  const gasLimit = BigNumber.from(`6000000`).mul(15).div(10);
+  const estimateGasPrice = await provider.getGasPrice();
+  const gasPrice = estimateGasPrice.mul(2);
 
-  const tokensAndStartTimes = [
+  console.log(`\nBeginnning Testnet Deployment script on network ${network.name}...\n`);
+
+  const tokens: string[] = ["SCLP"];
+  for (const token of tokens) {
+    await deployMockERC20(deploymentState, token, { gasPrice, gasLimit });
+  }
+
+  const fixedSwapsConfig: { key: string; token: string; fixedSwap: FixedSwapDeploymentType }[] = [
     {
-      token: `SCLP`,
-      id: `scallop`,
-      startTime: Math.floor(Date.now() / 1000) + 1 * 5 * 60,
-      endTime: Math.floor(Date.now() / 1000) + 1 * (5 + 20) * 60,
-      tradeValue: utils.parseEther(`1`).mul(7653061224).div(1e10).div(1e3),
-      minimumRaise: utils.parseEther(`1`).mul(200000),
-      tokensForSale: utils.parseEther(`1`).mul(400000),
-      individualMinimumAmount: BigNumber.from("0"),
-      individualMaximumAmount: BigNumber.from("500000000000000000000").mul(1000).div(375),
+      key: "SCLPscallopFixedSwap", // Combination of token in caps and id used in ui in lowercap.
+      token: "SCLP",
+      fixedSwap: {
+        tradeValue: utils.parseEther(`1`).mul(7653061224).div(1e10).div(1e3),
+        tokensForSale: utils.parseEther(`1`).mul(400000),
+        startDate: BigNumber.from(`${Math.floor(Date.now() / 1000) + 1 * 15 * 60}`),
+        endDate: BigNumber.from(`${Math.floor(Date.now() / 1000) + 1 * 50 * 60}`),
+        individualMinimumAmount: BigNumber.from(0),
+        individualMaximumAmount: BigNumber.from("500000000000000000000").mul(1000).div(375),
+        isTokenSwapAtomic: false,
+        minimumRaise: utils.parseEther(`1`).mul(200000),
+        hasWhitelisting: true,
+      },
+    },
+    {
+      key: "SCLPscallopmahaxFixedSwap", // Combination of token in caps and id used in ui in lowercap.
+      token: "SCLP",
+      fixedSwap: {
+        tradeValue: utils.parseEther(`1`).mul(7653061224).div(1e10).div(1e3),
+        tokensForSale: utils.parseEther(`1`).mul(400000),
+        startDate: BigNumber.from(`${Math.floor(Date.now() / 1000) + 1 * 15 * 60}`),
+        endDate: BigNumber.from(`${Math.floor(Date.now() / 1000) + 1 * 50 * 60}`),
+        individualMinimumAmount: BigNumber.from(0),
+        individualMaximumAmount: BigNumber.from("500000000000000000000").mul(1000).div(375),
+        isTokenSwapAtomic: false,
+        minimumRaise: utils.parseEther(`1`).mul(200000),
+        hasWhitelisting: true,
+      },
     },
   ];
 
-  const deploymentState: any = {};
-  for (const token of tokensAndStartTimes) {
-    await deployToken(deploymentState, token.id, token.token, token.startTime, token.endTime, token);
+  for (const fixedSwapConfig of fixedSwapsConfig) {
+    await deployFixedSwap(fixedSwapConfig.key, fixedSwapConfig.token, deploymentState, fixedSwapConfig.fixedSwap, {
+      gasPrice,
+      gasLimit,
+    });
   }
 
   console.log(`\nWriting deployments to output file...`);

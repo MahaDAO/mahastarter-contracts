@@ -1,16 +1,19 @@
 import { ethers, network } from "hardhat";
 
 async function main() {
-  console.log(`\nBeginnning whitelisting script on network ${network.name.toUpperCase()}...\n`);
+  console.log(`\nBeginnning Whitelisting script on network ${network.name.toUpperCase()}...\n`);
 
   const deployment = require(`../output/${network.name}.json`);
-  // const fixedSwap1 = await ethers.getContractAt("FixedSwap", deployment.SCLPscallopmahaxFixedSwap.address);
-  const fixedSwap2 = await ethers.getContractAt("FixedSwap", deployment.SCLPscallopFixedSwap.address);
-
-  console.log(`\nAdding to whitelist`);
+  const contractKeys: string[] = Object.values(deployment);
   const whilelistAddresses = process.env.WHITELIST_ADDRESSES?.split(`,`) || [];
-  // await fixedSwap1.add([...whilelistAddresses]);
-  await fixedSwap2.add([...whilelistAddresses]);
+
+  for (const contractKey of contractKeys) {
+    if (!contractKey.includes("FixedSwap")) continue;
+
+    console.log(`\nAdding to whitelist for ${contractKey} Fixedswap...`);
+    const fixedSwap = await ethers.getContractAt("FixedSwap", deployment[contractKey].address);
+    await fixedSwap.add([...whilelistAddresses]);
+  }
 }
 
 main().catch((error) => {
