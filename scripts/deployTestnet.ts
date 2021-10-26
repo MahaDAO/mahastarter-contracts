@@ -81,7 +81,7 @@ async function fundFixedSwap(
   console.log(`\nApproving ERC20:${erc20.address} to fund FixedSwap:${fixedSwap.address}...`);
   await erc20.approve(fixedSwap.address, constructorArgs.tokensForSale, overrides);
 
-  console.log(`\nFunding ERC20:${erc20.address} to fund FixedSwap:${fixedSwap.address}...`);
+  console.log(`Funding ERC20:${erc20.address} to fund FixedSwap:${fixedSwap.address}...`);
   await fixedSwap.fund(constructorArgs.tokensForSale, overrides);
 }
 
