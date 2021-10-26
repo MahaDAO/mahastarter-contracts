@@ -61,7 +61,7 @@ async function deployFixedSwap(
   console.log(`Deployed FixedSwap at ${fixedSwap.address}...`);
 
   deploymentState[key] = {
-    abi: "IERC20",
+    abi: "FixedSwap",
     address: fixedSwap.address,
   };
 
