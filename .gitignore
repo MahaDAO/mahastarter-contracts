@@ -6,5 +6,6 @@ typechain
 
 #Hardhat files
 cache
+output
 artifacts
 *.log

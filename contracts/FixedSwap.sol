@@ -345,22 +345,29 @@ contract FixedSwap is Pausable, Whitelist {
     }
 
     /* Redeem tokens when the sale was finalized */
-    function redeemTokens(uint256 purchase_id)
+    function redeemTokens()
         external
         isNotAtomicSwap
         isSaleFinalized
         whenNotPaused
     {
         /* Confirm it exists and was not finalized */
+        uint256[] memory _purchases = getMyPurchases(msg.sender);
+        uint256 _redeemAmount;
+
+        for (uint256 i = 0; i < _purchases.length; i++) {
+            if (
+                purchases[_purchases[i]].amount != 0 &&
+                purchases[_purchases[i]].wasFinalized == false &&
+                msg.sender == purchases[_purchases[i]].purchaser
+            ) {
+                purchases[_purchases[i]].wasFinalized = true;
+                _redeemAmount = _redeemAmount + purchases[_purchases[i]].amount;
+            }
+        }
+
         require(
-            (purchases[purchase_id].amount != 0) &&
-                !purchases[purchase_id].wasFinalized,
-            "Purchase is either 0 or finalized"
-        );
-        require(isBuyer(purchase_id), "Address is not buyer");
-        purchases[purchase_id].wasFinalized = true;
-        require(
-            erc20.transfer(msg.sender, purchases[purchase_id].amount),
+            erc20.transfer(msg.sender, _redeemAmount),
             "ERC20 transfer failed"
         );
     }

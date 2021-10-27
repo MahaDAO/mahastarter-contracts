@@ -3,6 +3,7 @@ import * as dotenv from "dotenv";
 import "solidity-coverage";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
+import "hardhat-abi-exporter";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-etherscan";
 import { HardhatUserConfig } from "hardhat/config";
@@ -10,12 +11,44 @@ import { HardhatUserConfig } from "hardhat/config";
 dotenv.config();
 
 const config: HardhatUserConfig = {
-  solidity: "0.5.8",
+  solidity: {
+    compilers: [
+      {
+        version: "0.5.8",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 100,
+          },
+        },
+      },
+      {
+        version: "0.8.0",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 100,
+          },
+        },
+      },
+    ],
+  },
   networks: {
     ropsten: {
       url: process.env.ROPSTEN_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
+    bscTestnet: {
+      url: process.env.BSC_TESTNET_URL || "",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
+    bsc: {
+      url: process.env.BSC_URL || "",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
+    rinkeby: {
+      url: process.env.RINKEBY_URL || "",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
   },
   gasReporter: {
@@ -23,7 +56,13 @@ const config: HardhatUserConfig = {
     currency: "USD",
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
+    apiKey: process.env.EXPLORER_API_KEY,
+  },
+  abiExporter: {
+    path: "./output/abi",
+    clear: true,
+    flat: true,
+    spacing: 2,
   },
 };
 

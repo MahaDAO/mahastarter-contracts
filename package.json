@@ -1,5 +1,15 @@
 {
   "name": "mahastarter-contracts",
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.2.0",
+    "hardhat-abi-exporter": "^2.3.0"
+  },
+  "scripts": {
+    "compile": "hardhat compile",
+    "deploy:bsc": "npx hardhat run scripts/deployTestnet.ts --network bsc",
+    "deploy:bscTestnet": "npx hardhat run scripts/deployTestnet.ts --network bscTestnet",
+    "deploy:rinkeby": "npx hardhat run scripts/deployTestnet.ts --network rinkeby"
+  },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-etherscan": "^2.1.6",
