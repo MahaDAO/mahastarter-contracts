@@ -1,3 +1,4 @@
+/* eslint-disable node/no-missing-import */
 import * as fs from "fs";
 
 import { ethers, network } from "hardhat";
@@ -53,6 +54,7 @@ async function deployFixedSwap(
     constructorArgs.individualMaximumAmount,
     constructorArgs.isTokenSwapAtomic,
     constructorArgs.minimumRaise,
+    18,
     constructorArgs.hasWhitelisting,
     overrides
   );
@@ -119,7 +121,7 @@ async function main() {
       token: "SCLP",
       fixedSwap: {
         tradeValue: utils.parseEther(`1`).mul(7731958763).div(1e10).div(1e3),
-        tokensForSale: utils.parseEther(`1`).mul(160000),
+        tokensForSale: utils.parseEther(`1`).mul(190000),
         startDate: BigNumber.from(`${Math.floor(Date.now() / 1000) + 1 * 2 * 60}`),
         endDate: BigNumber.from(`${Math.floor(Date.now() / 1000) + 1 * 10 * 60}`),
         individualMinimumAmount: BigNumber.from(0),

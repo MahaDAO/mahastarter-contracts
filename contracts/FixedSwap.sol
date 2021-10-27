@@ -57,7 +57,7 @@ contract FixedSwap is Pausable, Whitelist {
         uint256 _minimumRaise,
         uint256 _decimals,
         bool _hasWhitelisting
-    ) public Whitelist(_hasWhitelisting) {
+    ) Whitelist(_hasWhitelisting) {
         /* Confirmations */
         require(
             block.timestamp < _endDate,
