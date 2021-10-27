@@ -434,6 +434,22 @@ contract FixedSwap is Pausable, Whitelist {
         );
     }
 
+    function updateEndDate(uint256 _endDate) external onlyOwner {
+        endDate = _endDate;
+    }
+
+    function updateTradePrice(uint256 _tradeValue) external onlyOwner {
+        tradeValue = _tradeValue;
+    }
+
+    function updateMaxAllocation(uint256 _maxAllo) external onlyOwner {
+        individualMaximumAmount = _maxAllo;
+    }
+
+    function updateTokensForSale(uint256 _tokensForSale) external onlyOwner {
+        tokensForSale = _tokensForSale;
+    }
+
     /* Safe Pull function */
     function safePull() external payable onlyOwner whenPaused {
         payable(msg.sender).transfer(address(this).balance);
