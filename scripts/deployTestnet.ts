@@ -100,6 +100,9 @@ async function main() {
     await deployMockERC20(deploymentState, token, { gasPrice, gasLimit });
   }
 
+  const startDate = new Date("October 27, 2021 15:00:00 UTC");
+  const endDate = new Date("October 28, 2021 11:15:00 UTC");
+
   const fixedSwapsConfig: { key: string; token: string; fixedSwap: FixedSwapDeploymentType }[] = [
     {
       key: "SCLPscallopFixedSwap", // Combination of token in caps and id used in ui in lowercap.
@@ -107,8 +110,8 @@ async function main() {
       fixedSwap: {
         tradeValue: utils.parseEther(`1`).mul(7731958763).div(1e10).div(1e3),
         tokensForSale: utils.parseEther(`1`).mul(373333),
-        startDate: BigNumber.from(`October 27, 2021 15:00:00 UTC`),
-        endDate: BigNumber.from(`October 28, 2021 11:15:00 UTC`),
+        startDate: BigNumber.from(`${Math.floor(endDate.getTime() / 1000)}`),
+        endDate: BigNumber.from(`${Math.floor(startDate.getTime() / 1000)}`),
         individualMinimumAmount: BigNumber.from(0),
         individualMaximumAmount: BigNumber.from("300000000000000000000").mul(1000).div(375),
         isTokenSwapAtomic: false,
@@ -122,8 +125,8 @@ async function main() {
       fixedSwap: {
         tradeValue: utils.parseEther(`1`).mul(7731958763).div(1e10).div(1e3),
         tokensForSale: utils.parseEther(`1`).mul(190000),
-        startDate: BigNumber.from(`October 27, 2021 15:00:00 UTC`),
-        endDate: BigNumber.from(`October 28, 2021 11:15:00 UTC`),
+        startDate: BigNumber.from(`${Math.floor(endDate.getTime() / 1000)}`),
+        endDate: BigNumber.from(`${Math.floor(startDate.getTime() / 1000)}`),
         individualMinimumAmount: BigNumber.from(0),
         individualMaximumAmount: BigNumber.from("750000000000000000000").mul(1000).div(375),
         isTokenSwapAtomic: false,
