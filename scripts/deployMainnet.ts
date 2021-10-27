@@ -2,50 +2,25 @@
 import * as fs from "fs";
 
 import { ethers, network } from "hardhat";
-import { Contract, Overrides, utils, BigNumber } from "ethers";
+import { Overrides, utils, BigNumber } from "ethers";
 
-import { verifyContract } from "./utils";
+// import { verifyContract } from "./utils";
 import { DeploymentStateType, FixedSwapDeploymentType } from "./types";
 
 const { provider } = ethers;
 
-async function deployMockERC20(
-  deploymentState: DeploymentStateType,
-  token: string,
-  overrides: Overrides & { from?: string | Promise<string> }
-) {
-  let mockERC20Contract: Contract;
-
-  if (!deploymentState[token]) {
-    const MockERC20Factory = await ethers.getContractFactory("MockERC20");
-    mockERC20Contract = await MockERC20Factory.deploy(token, token, overrides);
-
-    await mockERC20Contract.deployed();
-    console.log(`\nDeployed MockERC20 at ${mockERC20Contract.address}...`);
-
-    deploymentState[token] = {
-      abi: "IERC20",
-      address: mockERC20Contract.address,
-    };
-
-    await verifyContract(mockERC20Contract.address, [token, token]);
-  } else {
-    mockERC20Contract = await ethers.getContractAt("MockERC20", deploymentState[token].address);
-  }
-}
-
 async function deployFixedSwap(
   key: string,
-  token: string,
+  tokenAddress: string,
   deploymentState: DeploymentStateType,
   constructorArgs: FixedSwapDeploymentType,
   overrides: Overrides & { from?: string | Promise<string> }
 ) {
   const FixedSwapFactory = await ethers.getContractFactory("FixedSwap");
 
-  console.log(`\nDeploying FixedSwap with ERC20:${deploymentState[token].address}...`);
+  console.log(`\nDeploying FixedSwap with ERC20:${tokenAddress}...`);
   const fixedSwap = await FixedSwapFactory.deploy(
-    deploymentState[token].address, // TODO hardcode/replace in mainnet deployment
+    tokenAddress, // TODO hardcode/replace in mainnet deployment
     constructorArgs.tradeValue,
     constructorArgs.tokensForSale,
     constructorArgs.startDate,
@@ -67,18 +42,18 @@ async function deployFixedSwap(
     address: fixedSwap.address,
   };
 
-  await verifyContract(fixedSwap.address, Object.values(constructorArgs));
+  // await verifyContract(fixedSwap.address, Object.values(constructorArgs));
 }
 
 async function fundFixedSwap(
   key: string,
-  token: string,
+  tokenAddress: string,
   deploymentState: DeploymentStateType,
   constructorArgs: FixedSwapDeploymentType,
   overrides: Overrides & { from?: string | Promise<string> }
 ) {
   const fixedSwap = await ethers.getContractAt("FixedSwap", deploymentState[key].address);
-  const erc20 = await ethers.getContractAt("MockERC20", deploymentState[token].address);
+  const erc20 = await ethers.getContractAt("MockERC20", tokenAddress);
 
   console.log(`\nApproving ERC20:${erc20.address} to fund FixedSwap:${fixedSwap.address}...`);
   await erc20.approve(fixedSwap.address, constructorArgs.tokensForSale, overrides);
@@ -95,10 +70,7 @@ async function main() {
 
   console.log(`\nBeginnning Testnet Deployment script on network ${network.name}...\n`);
 
-  const tokens: string[] = ["SCLP"];
-  for (const token of tokens) {
-    await deployMockERC20(deploymentState, token, { gasPrice, gasLimit });
-  }
+  const sclpTokenAddress = "0xF2c96E402c9199682d5dED26D3771c6B192c01af";
 
   const startDate = new Date("October 27, 2021 15:00:00 UTC");
   const endDate = new Date("October 28, 2021 11:15:00 UTC");
@@ -137,12 +109,12 @@ async function main() {
   ];
 
   for (const fixedSwapConfig of fixedSwapsConfig) {
-    await deployFixedSwap(fixedSwapConfig.key, fixedSwapConfig.token, deploymentState, fixedSwapConfig.fixedSwap, {
+    await deployFixedSwap(fixedSwapConfig.key, sclpTokenAddress, deploymentState, fixedSwapConfig.fixedSwap, {
       gasPrice,
       gasLimit,
     });
 
-    await fundFixedSwap(fixedSwapConfig.key, fixedSwapConfig.token, deploymentState, fixedSwapConfig.fixedSwap, {
+    await fundFixedSwap(fixedSwapConfig.key, sclpTokenAddress, deploymentState, fixedSwapConfig.fixedSwap, {
       gasPrice,
       gasLimit,
     });

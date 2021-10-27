@@ -393,7 +393,7 @@ contract FixedSwap is Pausable, Whitelist {
     }
 
     /* Admin Functions */
-    function withdrawFunds() external onlyOwner whenNotPaused isSaleFinalized {
+    function withdrawFunds() external onlyOwner whenNotPaused {
         require(minimumRaiseAchieved(), "Minimum raise has to be reached");
          payable(msg.sender).transfer(address(this).balance);
     }
