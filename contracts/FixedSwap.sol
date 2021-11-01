@@ -266,7 +266,7 @@ contract FixedSwap is Pausable, Whitelist {
     }
 
     /* Action Functions */
-    function swap(uint256 _amount)
+    function invest(uint256 _amount)
         external
         payable
         whenNotPaused

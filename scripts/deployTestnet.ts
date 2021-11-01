@@ -108,7 +108,7 @@ async function main() {
       key: "SCLPscallopFixedSwap", // Combination of token in caps and id used in ui in lowercap.
       token: "SCLP",
       fixedSwap: {
-        tradeValue: utils.parseEther(`1`).mul(82529911894).div(1e10).div(1e3),
+        tradeValue: utils.parseEther(`1`).mul(7731958763).div(1e10).div(1e3),
         tokensForSale: utils.parseEther(`1`).mul(373333),
         startDate: BigNumber.from(`${Math.floor(startDate.getTime() / 1000)}`),
         endDate: BigNumber.from(`${Math.floor(endDate.getTime() / 1000)}`),
@@ -123,7 +123,7 @@ async function main() {
       key: "SCLPscallopmahaxFixedSwap", // Combination of token in caps and id used in ui in lowercap.
       token: "SCLP",
       fixedSwap: {
-        tradeValue: utils.parseEther(`1`).mul(82529911894).div(1e10).div(1e3),
+        tradeValue: utils.parseEther(`1`).mul(7731958763).div(1e10).div(1e3),
         tokensForSale: utils.parseEther(`1`).mul(190000),
         startDate: BigNumber.from(`${Math.floor(startDate.getTime() / 1000)}`),
         endDate: BigNumber.from(`${Math.floor(endDate.getTime() / 1000)}`),
