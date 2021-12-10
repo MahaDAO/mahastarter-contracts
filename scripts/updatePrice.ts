@@ -1,5 +1,5 @@
+import { utils } from "ethers";
 import { ethers, network } from "hardhat";
-import { Overrides, utils, BigNumber } from "ethers";
 
 async function main() {
   console.log(`\nUpdating price script on network ${network.name}...\n`);

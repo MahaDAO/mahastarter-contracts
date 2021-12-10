@@ -1,6 +1,6 @@
+/* eslint-disable node/no-missing-import */
 import { ethers, network } from "hardhat";
-import fs from "fs/promises";
-import path from "path";
+
 import { isAddress } from "./utils";
 
 async function main() {

@@ -4,7 +4,6 @@ import * as fs from "fs";
 import { ethers, network } from "hardhat";
 import { Overrides, utils, BigNumber } from "ethers";
 
-// import { verifyContract } from "./utils";
 import { DeploymentStateType, FixedSwapDeploymentType } from "./types";
 
 const { provider } = ethers;
@@ -41,8 +40,6 @@ async function deployFixedSwap(
     abi: "FixedSwap",
     address: fixedSwap.address,
   };
-
-  // await verifyContract(fixedSwap.address, Object.values(constructorArgs));
 }
 
 async function fundFixedSwap(
