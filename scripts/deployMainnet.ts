@@ -19,7 +19,7 @@ async function deployFixedSwap(
 
   console.log(`\nDeploying FixedSwap with ERC20:${tokenAddress}...`);
   const fixedSwap = await FixedSwapFactory.deploy(
-    tokenAddress, // TODO hardcode/replace in mainnet deployment
+    tokenAddress,
     constructorArgs.tradeValue,
     constructorArgs.tokensForSale,
     constructorArgs.startDate,
@@ -74,7 +74,7 @@ async function main() {
 
   const fixedSwapsConfig: { key: string; token: string; fixedSwap: FixedSwapDeploymentType }[] = [
     {
-      key: "SCLPscallopFixedSwap", // Combination of token in caps and id used in ui in lowercap.
+      key: "SCLPscallopFixedSwap",
       token: "SCLP",
       fixedSwap: {
         tradeValue: utils.parseEther(`1`).mul(8259911894).div(1e10).div(1e3),
@@ -89,7 +89,7 @@ async function main() {
       },
     },
     {
-      key: "SCLPscallopmahaxFixedSwap", // Combination of token in caps and id used in ui in lowercap.
+      key: "SCLPscallopmahaxFixedSwap",
       token: "SCLP",
       fixedSwap: {
         tradeValue: utils.parseEther(`1`).mul(8259911894).div(1e10).div(1e3),

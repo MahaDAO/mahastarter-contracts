@@ -37,14 +37,16 @@ async function deployMockERC20(
 async function deployFixedSwap(
   key: string,
   token: string,
+  inputToken: string,
   deploymentState: DeploymentStateType,
   constructorArgs: FixedSwapDeploymentType,
   overrides: Overrides & { from?: string | Promise<string> }
 ) {
-  const FixedSwapFactory = await ethers.getContractFactory("FixedSwap");
+  const FixedSwapFactory = await ethers.getContractFactory("FixedSwapERC20");
 
   console.log(`\nDeploying FixedSwap with ERC20:${deploymentState[token].address}...`);
   const fixedSwap = await FixedSwapFactory.deploy(
+    deploymentState[inputToken].address,
     deploymentState[token].address,
     constructorArgs.tradeValue,
     constructorArgs.tokensForSale,
@@ -95,7 +97,7 @@ async function main() {
 
   console.log(`\nBeginnning Testnet Deployment script on network ${network.name}...\n`);
 
-  const tokens: string[] = ["SCLP"];
+  const tokens: string[] = ["BUSD", "SCLP"];
   for (const token of tokens) {
     await deployMockERC20(deploymentState, token, { gasPrice, gasLimit });
   }
@@ -103,10 +105,11 @@ async function main() {
   const startDate = new Date("October 27, 2021 15:00:00 UTC");
   const endDate = new Date("October 28, 2021 11:15:00 UTC");
 
-  const fixedSwapsConfig: { key: string; token: string; fixedSwap: FixedSwapDeploymentType }[] = [
+  const fixedSwapsConfig: { key: string; token: string; inputToken: string; fixedSwap: FixedSwapDeploymentType }[] = [
     {
-      key: "SCLPscallopFixedSwap", // Combination of token in caps and id used in ui in lowercap.
+      key: "SCLPscallopFixedSwap",
       token: "SCLP",
+      inputToken: "BUSD",
       fixedSwap: {
         tradeValue: utils.parseEther(`1`).mul(7731958763).div(1e10).div(1e3),
         tokensForSale: utils.parseEther(`1`).mul(373333),
@@ -120,8 +123,9 @@ async function main() {
       },
     },
     {
-      key: "SCLPscallopmahaxFixedSwap", // Combination of token in caps and id used in ui in lowercap.
+      key: "SCLPscallopmahaxFixedSwap",
       token: "SCLP",
+      inputToken: "BUSD",
       fixedSwap: {
         tradeValue: utils.parseEther(`1`).mul(7731958763).div(1e10).div(1e3),
         tokensForSale: utils.parseEther(`1`).mul(190000),
@@ -137,10 +141,17 @@ async function main() {
   ];
 
   for (const fixedSwapConfig of fixedSwapsConfig) {
-    await deployFixedSwap(fixedSwapConfig.key, fixedSwapConfig.token, deploymentState, fixedSwapConfig.fixedSwap, {
-      gasPrice,
-      gasLimit,
-    });
+    await deployFixedSwap(
+      fixedSwapConfig.key,
+      fixedSwapConfig.token,
+      fixedSwapConfig.inputToken,
+      deploymentState,
+      fixedSwapConfig.fixedSwap,
+      {
+        gasPrice,
+        gasLimit,
+      }
+    );
 
     await fundFixedSwap(fixedSwapConfig.key, fixedSwapConfig.token, deploymentState, fixedSwapConfig.fixedSwap, {
       gasPrice,

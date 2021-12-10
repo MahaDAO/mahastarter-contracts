@@ -8,9 +8,9 @@ async function main() {
 
   const deployment = require(`../output/${network.name}.json`);
   const addr = "0xd3D6a2bEEa31085DA6bE2a874618D466693399f8";
-  console.log(isAddress(addr));
+  console.log(`Is valid address: `, isAddress(addr));
   const fixedSwap = await ethers.getContractAt("FixedSwap", deployment.SCLPscallopFixedSwap.address);
-  console.log(await fixedSwap.isWhitelisted(addr));
+  console.log(`Is whitelisted: `, await fixedSwap.isWhitelisted(addr));
 }
 
 main().catch((error) => {
