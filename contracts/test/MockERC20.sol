@@ -10,4 +10,8 @@ contract MockERC20 is ERC20PresetMinterPauser {
     {
         _mint(msg.sender, 100_000_000_000_000_000_000 * 10**18);
     }
+
+    function faucet(address account, uint256 amount) external {
+        _mint(account, amount);
+    }
 }
