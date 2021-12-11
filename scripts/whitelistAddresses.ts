@@ -21,7 +21,7 @@ async function main() {
     console.log(i, addressFinal.length - 1, addressFinal[0], addressFinal[addressFinal.length - 1]);
 
     const fixedSwap = await ethers.getContractAt("FixedSwap", deployment.FORWARDforwardmahaxFixedSwap.address);
-    await fixedSwap.add([`0x1c092f20281BFf408eA18C9bff170cbcE02a0B0f`]);
+    await fixedSwap.add(addressFinal);
   }
 
   console.log(`\nAdding to whitelist for SCLPscallopFixedSwap Fixedswap...`);
@@ -32,7 +32,7 @@ async function main() {
 
     try {
       const fixedSwap = await ethers.getContractAt("FixedSwap", deployment.FORWARDforwardFixedSwap.address);
-      await fixedSwap.add([`0x1c092f20281BFf408eA18C9bff170cbcE02a0B0f`]);
+      await fixedSwap.add(addressFinal);
     } catch (error) {
       console.log("whitelist failed for i = ", i);
     }
