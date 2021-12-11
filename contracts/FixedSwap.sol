@@ -2,11 +2,10 @@
 
 pragma solidity ^0.8.0;
 
+import {Whitelist} from "./Whitelist.sol";
 import {Pausable} from "@openzeppelin/contracts/security/Pausable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-
-import {Whitelist} from "./Whitelist.sol";
 
 contract FixedSwap is Pausable, Whitelist {
     using SafeMath for uint256;
