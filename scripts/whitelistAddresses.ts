@@ -20,23 +20,23 @@ async function main() {
     const addressFinal = addressse.filter((a) => isAddress(a));
     console.log(i, addressFinal.length - 1, addressFinal[0], addressFinal[addressFinal.length - 1]);
 
-    const fixedSwap = await ethers.getContractAt("FixedSwap", deployment.SCLPscallopmahaxFixedSwap.address);
-    await fixedSwap.add(["0xa99037f7AADc8acc0F2b259Eb947f04F4c51690f"]);
+    const fixedSwap = await ethers.getContractAt("FixedSwap", deployment.FORWARDforwardmahaxFixedSwap.address);
+    await fixedSwap.add([`0x1c092f20281BFf408eA18C9bff170cbcE02a0B0f`]);
   }
 
-  // console.log(`\nAdding to whitelist for SCLPscallopFixedSwap Fixedswap...`);
-  // for (let i = 0; i < publicAddresses.length; i += 500) {
-  //   const addressse = publicAddresses.slice(i, i + 500);
-  //   const addressFinal = addressse.filter((a) => isAddress(a));
-  //   console.log(i, addressFinal.length - 1, addressFinal[0], addressFinal[addressFinal.length - 1]);
+  console.log(`\nAdding to whitelist for SCLPscallopFixedSwap Fixedswap...`);
+  for (let i = 0; i < publicAddresses.length; i += 500) {
+    const addressse = publicAddresses.slice(i, i + 500);
+    const addressFinal = addressse.filter((a) => isAddress(a));
+    console.log(i, addressFinal.length - 1, addressFinal[0], addressFinal[addressFinal.length - 1]);
 
-  //   try {
-  //     const fixedSwap = await ethers.getContractAt("FixedSwap", deployment.SCLPscallopFixedSwap.address);
-  //     await fixedSwap.add(addressFinal);
-  //   } catch (error) {
-  //     console.log("whitelist failed for i = ", i);
-  //   }
-  // }
+    try {
+      const fixedSwap = await ethers.getContractAt("FixedSwap", deployment.FORWARDforwardFixedSwap.address);
+      await fixedSwap.add([`0x1c092f20281BFf408eA18C9bff170cbcE02a0B0f`]);
+    } catch (error) {
+      console.log("whitelist failed for i = ", i);
+    }
+  }
 }
 
 main().catch((error) => {

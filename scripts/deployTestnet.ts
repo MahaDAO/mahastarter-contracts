@@ -37,6 +37,7 @@ async function deployMockERC20(
 async function deployFixedSwap(
   key: string,
   token: string,
+  inputToken: string,
   deploymentState: DeploymentStateType,
   constructorArgs: FixedSwapDeploymentType,
   overrides: Overrides & { from?: string | Promise<string> }
@@ -45,6 +46,7 @@ async function deployFixedSwap(
 
   console.log(`\nDeploying FixedSwap with ERC20:${deploymentState[token].address}...`);
   const fixedSwap = await FixedSwapFactory.deploy(
+    deploymentState[inputToken].address,
     deploymentState[token].address,
     constructorArgs.tradeValue,
     constructorArgs.tokensForSale,
@@ -95,40 +97,42 @@ async function main() {
 
   console.log(`\nBeginnning Testnet Deployment script on network ${network.name}...\n`);
 
-  const tokens: string[] = ["SCLP"];
+  const tokens: string[] = ["BUSD", "FORWARD"];
   for (const token of tokens) {
     await deployMockERC20(deploymentState, token, { gasPrice, gasLimit });
   }
 
-  const startDate = new Date("October 27, 2021 15:00:00 UTC");
-  const endDate = new Date("October 28, 2021 11:15:00 UTC");
+  const startDate = Date.now() + 5 * 60 * 1000;
+  const endDate = Date.now() + 60 * 60 * 1000;
 
-  const fixedSwapsConfig: { key: string; token: string; fixedSwap: FixedSwapDeploymentType }[] = [
+  const fixedSwapsConfig: { key: string; token: string; inputToken: string; fixedSwap: FixedSwapDeploymentType }[] = [
     {
-      key: "SCLPscallopFixedSwap", // Combination of token in caps and id used in ui in lowercap.
-      token: "SCLP",
+      key: "FORWARDforwardFixedSwap",
+      token: "FORWARD",
+      inputToken: "BUSD",
       fixedSwap: {
-        tradeValue: utils.parseEther(`1`).mul(7731958763).div(1e10).div(1e3),
-        tokensForSale: utils.parseEther(`1`).mul(373333),
-        startDate: BigNumber.from(`${Math.floor(startDate.getTime() / 1000)}`),
-        endDate: BigNumber.from(`${Math.floor(endDate.getTime() / 1000)}`),
+        tradeValue: utils.parseEther(`1`).mul(2).div(1e2),
+        tokensForSale: utils.parseEther(`1`).mul(2500000),
+        startDate: BigNumber.from(`${Math.floor(startDate / 1000)}`),
+        endDate: BigNumber.from(`${Math.floor(endDate / 1000)}`),
         individualMinimumAmount: BigNumber.from(0),
-        individualMaximumAmount: BigNumber.from("300000000000000000000").mul(1000).div(375),
+        individualMaximumAmount: BigNumber.from("300000000000000000000").mul(1000).div(20),
         isTokenSwapAtomic: false,
         minimumRaise: utils.parseEther(`0`),
         hasWhitelisting: true,
       },
     },
     {
-      key: "SCLPscallopmahaxFixedSwap", // Combination of token in caps and id used in ui in lowercap.
-      token: "SCLP",
+      key: "FORWARDforwardmahaxFixedSwap",
+      token: "FORWARD",
+      inputToken: "BUSD",
       fixedSwap: {
-        tradeValue: utils.parseEther(`1`).mul(7731958763).div(1e10).div(1e3),
-        tokensForSale: utils.parseEther(`1`).mul(190000),
-        startDate: BigNumber.from(`${Math.floor(startDate.getTime() / 1000)}`),
-        endDate: BigNumber.from(`${Math.floor(endDate.getTime() / 1000)}`),
+        tradeValue: utils.parseEther(`1`).mul(2).div(1e2),
+        tokensForSale: utils.parseEther(`1`).mul(2500000),
+        startDate: BigNumber.from(`${Math.floor(startDate / 1000)}`),
+        endDate: BigNumber.from(`${Math.floor(endDate / 1000)}`),
         individualMinimumAmount: BigNumber.from(0),
-        individualMaximumAmount: BigNumber.from("750000000000000000000").mul(1000).div(375),
+        individualMaximumAmount: BigNumber.from("750000000000000000000").mul(1000).div(20),
         isTokenSwapAtomic: false,
         minimumRaise: utils.parseEther(`0`),
         hasWhitelisting: true,
@@ -137,10 +141,17 @@ async function main() {
   ];
 
   for (const fixedSwapConfig of fixedSwapsConfig) {
-    await deployFixedSwap(fixedSwapConfig.key, fixedSwapConfig.token, deploymentState, fixedSwapConfig.fixedSwap, {
-      gasPrice,
-      gasLimit,
-    });
+    await deployFixedSwap(
+      fixedSwapConfig.key,
+      fixedSwapConfig.token,
+      fixedSwapConfig.inputToken,
+      deploymentState,
+      fixedSwapConfig.fixedSwap,
+      {
+        gasPrice,
+        gasLimit,
+      }
+    );
 
     await fundFixedSwap(fixedSwapConfig.key, fixedSwapConfig.token, deploymentState, fixedSwapConfig.fixedSwap, {
       gasPrice,
