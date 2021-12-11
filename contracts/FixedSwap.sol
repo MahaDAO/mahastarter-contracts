@@ -209,6 +209,10 @@ contract FixedSwap is Pausable, Whitelist {
         return _amount.mul(tradeValue).div(10**decimals);
     }
 
+    function reverseCost(uint256 _inputAmount) public view returns (uint256) {
+        return _inputAmount.mul(10**decimals).div(tradeValue);
+    }
+
     function getPurchase(uint256 _purchase_id)
         external
         view
@@ -287,7 +291,8 @@ contract FixedSwap is Pausable, Whitelist {
 
         /* Confirm the user has funds for the transfer, confirm the value is equal */
         require(
-            inputAmount == cost(_amount),
+            inputAmount == cost(_amount) ||
+            reverseCost(inputAmount) == _amount,
             "User has to cover the cost of the swap in ETH, use the cost function to determine"
         );
 
