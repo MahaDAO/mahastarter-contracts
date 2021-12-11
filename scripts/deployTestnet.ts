@@ -24,11 +24,11 @@ async function deployMockERC20(
     console.log(`\nDeployed MockERC20 at ${mockERC20Contract.address}...`);
 
     deploymentState[token] = {
-      abi: "IERC20",
+      abi: "MockERC20",
       address: mockERC20Contract.address,
     };
 
-    await verifyContract(mockERC20Contract.address, [token, token]);
+    // await verifyContract(mockERC20Contract.address, [token, token]);
   } else {
     mockERC20Contract = await ethers.getContractAt("MockERC20", deploymentState[token].address);
   }
@@ -103,7 +103,7 @@ async function main() {
   }
 
   const startDate = Date.now() + 5 * 60 * 1000;
-  const endDate = Date.now() + 60 * 60 * 1000;
+  const endDate = Date.now() + 3 * 60 * 60 * 1000;
 
   const fixedSwapsConfig: { key: string; token: string; inputToken: string; fixedSwap: FixedSwapDeploymentType }[] = [
     {
