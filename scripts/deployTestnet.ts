@@ -102,8 +102,8 @@ async function main() {
     await deployMockERC20(deploymentState, token, { gasPrice, gasLimit });
   }
 
-  const startDate = Date.now() + 5 * 60 * 1000;
-  const endDate = Date.now() + 3 * 60 * 60 * 1000;
+  const startDate = Date.now() + 10 * 60 * 1000;
+  const endDate = Date.now() + 4 * 60 * 60 * 1000;
 
   const fixedSwapsConfig: { key: string; token: string; inputToken: string; fixedSwap: FixedSwapDeploymentType }[] = [
     {
