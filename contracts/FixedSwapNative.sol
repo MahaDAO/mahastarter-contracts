@@ -7,7 +7,7 @@ import {Pausable} from "@openzeppelin/contracts/security/Pausable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-contract FixedSwap is Pausable, Whitelist {
+contract FixedSwapNative is Pausable, Whitelist {
     using SafeMath for uint256;
     uint256 increment = 0;
 
@@ -17,7 +17,6 @@ contract FixedSwap is Pausable, Whitelist {
     mapping(address => uint256[]) public myPurchases; /* Purchasers mapping */
 
     IERC20 public erc20;
-    IERC20 public inputERC20;
     bool public isSaleFunded = false;
     uint256 public decimals = 0;
     bool public unsoldTokensReedemed = false;
@@ -47,7 +46,6 @@ contract FixedSwap is Pausable, Whitelist {
     );
 
     constructor(
-        address _inputTokenAddress,
         address _tokenAddress,
         uint256 _tradeValue,
         uint256 _tokensForSale,
@@ -99,7 +97,6 @@ contract FixedSwap is Pausable, Whitelist {
         }
 
         erc20 = IERC20(_tokenAddress);
-        inputERC20 = IERC20(_inputTokenAddress);
         decimals = _decimals;
     }
 
@@ -209,10 +206,6 @@ contract FixedSwap is Pausable, Whitelist {
         return _amount.mul(tradeValue).div(10**decimals);
     }
 
-    function reverseCost(uint256 _inputAmount) public view returns (uint256) {
-        return _inputAmount.mul(10**decimals).div(tradeValue);
-    }
-
     function getPurchase(uint256 _purchase_id)
         external
         view
@@ -273,8 +266,9 @@ contract FixedSwap is Pausable, Whitelist {
     }
 
     /* Action Functions */
-    function invest(uint256 inputAmount, uint256 _amount)
+    function invest(uint256 _amount)
         external
+        payable
         whenNotPaused
         isFunded
         isSaleOpen
@@ -291,15 +285,8 @@ contract FixedSwap is Pausable, Whitelist {
 
         /* Confirm the user has funds for the transfer, confirm the value is equal */
         require(
-            inputAmount == cost(_amount) ||
-            reverseCost(inputAmount) == _amount,
+            msg.value == cost(_amount),
             "User has to cover the cost of the swap in ETH, use the cost function to determine"
-        );
-
-        /* Confirm that user has provided the input token as investment */
-        require(
-            inputERC20.transferFrom(msg.sender, address(this), inputAmount),
-            "ERC20 transfer from didnt work"
         );
 
         /* Confirm Amount is bigger than minimum Amount */
@@ -344,7 +331,7 @@ contract FixedSwap is Pausable, Whitelist {
         Purchase memory purchase = Purchase(
             _amount,
             msg.sender,
-            inputAmount,
+            msg.value,
             block.timestamp,
             isTokenSwapAtomic, /* If Atomic Swap */
             false
@@ -402,22 +389,13 @@ contract FixedSwap is Pausable, Whitelist {
         require(isBuyer(purchase_id), "Address is not buyer");
         purchases[purchase_id].wasFinalized = true;
         purchases[purchase_id].reverted = true;
-
-        require(
-            inputERC20.transfer(msg.sender, purchases[purchase_id].ethAmount),
-            "ERC20 transfer didnt work"
-        );
+        payable(msg.sender).transfer(purchases[purchase_id].ethAmount);
     }
 
     /* Admin Functions */
     function withdrawFunds() external onlyOwner whenNotPaused {
         require(minimumRaiseAchieved(), "Minimum raise has to be reached");
-
-        uint256 balance = inputERC20.balanceOf(address(this));
-        require(
-            inputERC20.transfer(msg.sender, balance),
-            "ERC20 transfer didnt work"
-        );
+         payable(msg.sender).transfer(address(this).balance);
     }
 
     function withdrawUnsoldTokens() external onlyOwner isSaleFinalized {
@@ -472,18 +450,9 @@ contract FixedSwap is Pausable, Whitelist {
         tokensForSale = _tokensForSale;
     }
 
-    function pause() external onlyOwner whenNotPaused {
-        _pause();
-    }
-
-    function unpause() external onlyOwner whenPaused {
-        _unpause();
-    }
-
     /* Safe Pull function */
-    function safePull() external onlyOwner whenPaused {
-        uint256 balance = inputERC20.balanceOf(address(this));
-        inputERC20.transfer(msg.sender, balance);
+    function safePull() external payable onlyOwner whenPaused {
+        payable(msg.sender).transfer(address(this).balance);
         erc20.transfer(msg.sender, erc20.balanceOf(address(this)));
     }
 }

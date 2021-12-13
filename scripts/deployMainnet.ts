@@ -15,7 +15,7 @@ async function deployFixedSwap(
   constructorArgs: FixedSwapDeploymentType,
   overrides: Overrides & { from?: string | Promise<string> }
 ) {
-  const FixedSwapFactory = await ethers.getContractFactory("FixedSwap");
+  const FixedSwapFactory = await ethers.getContractFactory("FixedSwapERC20");
 
   console.log(`\nDeploying FixedSwap with ERC20:${tokenAddress}...`);
   const fixedSwap = await FixedSwapFactory.deploy(
@@ -37,7 +37,7 @@ async function deployFixedSwap(
   console.log(`Deployed FixedSwap at ${fixedSwap.address}...`);
 
   deploymentState[key] = {
-    abi: "FixedSwap",
+    abi: "FixedSwapERC20",
     address: fixedSwap.address,
   };
 }
@@ -49,7 +49,7 @@ async function fundFixedSwap(
   constructorArgs: FixedSwapDeploymentType,
   overrides: Overrides & { from?: string | Promise<string> }
 ) {
-  const fixedSwap = await ethers.getContractAt("FixedSwap", deploymentState[key].address);
+  const fixedSwap = await ethers.getContractAt("FixedSwapERC20", deploymentState[key].address);
   const erc20 = await ethers.getContractAt("MockERC20", tokenAddress);
 
   console.log(`\nApproving ERC20:${erc20.address} to fund FixedSwap:${fixedSwap.address}...`);
