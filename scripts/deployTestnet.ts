@@ -107,7 +107,7 @@ async function main() {
 
   const fixedSwapsConfig: { key: string; token: string; inputToken: string; fixedSwap: FixedSwapDeploymentType }[] = [
     {
-      key: "FORWARDforwardFixedSwap",
+      key: "FORWARDPublicSale",
       token: "FORWARD",
       inputToken: "BUSD",
       fixedSwap: {
@@ -123,7 +123,39 @@ async function main() {
       },
     },
     {
-      key: "FORWARDforwardmahaxFixedSwap",
+      key: "FORWARDMahaXT1Sale",
+      token: "FORWARD",
+      inputToken: "BUSD",
+      fixedSwap: {
+        tradeValue: utils.parseEther(`1`).mul(2).div(1e2),
+        tokensForSale: utils.parseEther(`1`).mul(2500000),
+        startDate: BigNumber.from(`${Math.floor(startDate / 1000)}`),
+        endDate: BigNumber.from(`${Math.floor(endDate / 1000)}`),
+        individualMinimumAmount: BigNumber.from(0),
+        individualMaximumAmount: BigNumber.from("750000000000000000000").mul(1000).div(20),
+        isTokenSwapAtomic: false,
+        minimumRaise: utils.parseEther(`0`),
+        hasWhitelisting: true,
+      },
+    },
+    {
+      key: "FORWARDMahaXT2Sale",
+      token: "FORWARD",
+      inputToken: "BUSD",
+      fixedSwap: {
+        tradeValue: utils.parseEther(`1`).mul(2).div(1e2),
+        tokensForSale: utils.parseEther(`1`).mul(2500000),
+        startDate: BigNumber.from(`${Math.floor(startDate / 1000)}`),
+        endDate: BigNumber.from(`${Math.floor(endDate / 1000)}`),
+        individualMinimumAmount: BigNumber.from(0),
+        individualMaximumAmount: BigNumber.from("750000000000000000000").mul(1000).div(20),
+        isTokenSwapAtomic: false,
+        minimumRaise: utils.parseEther(`0`),
+        hasWhitelisting: true,
+      },
+    },
+    {
+      key: "FORWARDSquareUp",
       token: "FORWARD",
       inputToken: "BUSD",
       fixedSwap: {
