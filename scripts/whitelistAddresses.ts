@@ -8,8 +8,8 @@ async function main() {
 
   const deployment = require(`../output/${network.name}.json`);
 
-  const mahaxRaw = await fs.readFile(path.resolve(__dirname, "../output/mahax.txt"));
   const publicRaw = await fs.readFile(path.resolve(__dirname, "../output/public.txt"));
+  const mahaxRaw = await fs.readFile(path.resolve(__dirname, "../output/mahax.txt"));
   const mahaxt2 = await fs.readFile(path.resolve(__dirname, "../output/mahaxt2.txt"));
   const squareRaw = await fs.readFile(path.resolve(__dirname, "../output/squareRaw.txt"));
 
@@ -26,20 +26,6 @@ async function main() {
 
     const fixedSwap = await ethers.getContractAt("FixedSwap", deployment.FORWARDforwardmahaxFixedSwap.address);
     await fixedSwap.add(addressFinal);
-  }
-
-  console.log(`\nAdding to whitelist for FORWARDforwardFixedSwap Fixedswap...`);
-  for (let i = 0; i < publicAddresses.length; i += 500) {
-    const addressse = publicAddresses.slice(i, i + 500);
-    const addressFinal = addressse.filter((a) => isAddress(a));
-    console.log(i, addressFinal.length - 1, addressFinal[0], addressFinal[addressFinal.length - 1]);
-
-    try {
-      const fixedSwap = await ethers.getContractAt("FixedSwap", deployment.FORWARDforwardFixedSwap.address);
-      await fixedSwap.add(addressFinal);
-    } catch (error) {
-      console.log("whitelist failed for i = ", i);
-    }
   }
 
   console.log(`\nAdding to whitelist for FORWARDforwardmahax2FixedSwap Fixedswap...`);
@@ -64,6 +50,20 @@ async function main() {
 
     try {
       const fixedSwap = await ethers.getContractAt("FixedSwap", deployment.FORWARDforwardsquareupFixedSwap.address);
+      await fixedSwap.add(addressFinal);
+    } catch (error) {
+      console.log("whitelist failed for i = ", i);
+    }
+  }
+
+  console.log(`\nAdding to whitelist for FORWARDforwardFixedSwap Fixedswap...`);
+  for (let i = 0; i < publicAddresses.length; i += 500) {
+    const addressse = publicAddresses.slice(i, i + 500);
+    const addressFinal = addressse.filter((a) => isAddress(a));
+    console.log(i, addressFinal.length - 1, addressFinal[0], addressFinal[addressFinal.length - 1]);
+
+    try {
+      const fixedSwap = await ethers.getContractAt("FixedSwap", deployment.FORWARDforwardFixedSwap.address);
       await fixedSwap.add(addressFinal);
     } catch (error) {
       console.log("whitelist failed for i = ", i);

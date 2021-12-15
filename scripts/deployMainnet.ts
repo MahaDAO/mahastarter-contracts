@@ -44,11 +44,11 @@ async function deployFixedSwap(
     address: fixedSwap.address,
   };
 
-  console.log("waiting for 30s");
-  await wait(30 * 1000);
+  // console.log("waiting for 30s");
+  // await wait(30 * 1000);
 
-  console.log("verify", fixedSwap.address, Object.values(constructorArgs));
-  await verifyContract(fixedSwap.address, Object.values(constructorArgs));
+  // console.log("verify", fixedSwap.address, Object.values(constructorArgs));
+  // await verifyContract(fixedSwap.address, Object.values(constructorArgs));
 }
 
 async function fundFixedSwap(
