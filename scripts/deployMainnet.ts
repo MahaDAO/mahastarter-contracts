@@ -4,7 +4,7 @@ import * as fs from "fs";
 import { ethers, network } from "hardhat";
 import { Overrides, utils, BigNumber } from "ethers";
 
-import { verifyContract } from "./utils";
+import { verifyContract, wait } from "./utils";
 import { DeploymentStateType, FixedSwapDeploymentType } from "./types";
 
 const { provider } = ethers;
@@ -44,6 +44,9 @@ async function deployFixedSwap(
     address: fixedSwap.address,
   };
 
+  console.log("waiting for 30s");
+  await wait(30 * 1000);
+
   console.log("verify", fixedSwap.address, Object.values(constructorArgs));
   await verifyContract(fixedSwap.address, Object.values(constructorArgs));
 }
@@ -81,7 +84,7 @@ async function main() {
 
   const fixedSwapsConfig: { key: string; token: string; inputToken: string; fixedSwap: FixedSwapDeploymentType }[] = [
     {
-      key: "FORWARDPublicSale",
+      key: "FORWARDforwardFixedSwap",
       token: forward,
       inputToken: busd,
       fixedSwap: {
@@ -97,7 +100,7 @@ async function main() {
       },
     },
     {
-      key: "FORWARDMahaXT1Sale",
+      key: "FORWARDforwardmahaxFixedSwap",
       token: forward,
       inputToken: busd,
       fixedSwap: {
@@ -113,7 +116,7 @@ async function main() {
       },
     },
     {
-      key: "FORWARDMahaXT2Sale",
+      key: "FORWARDforwardmahax2FixedSwap",
       token: forward,
       inputToken: busd,
       fixedSwap: {
@@ -129,7 +132,7 @@ async function main() {
       },
     },
     {
-      key: "FORWARDSquareUp",
+      key: "FORWARDforwardsquareupFixedSwap",
       token: forward,
       inputToken: busd,
       fixedSwap: {
