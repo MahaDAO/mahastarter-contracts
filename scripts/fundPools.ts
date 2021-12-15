@@ -4,52 +4,10 @@ import * as fs from "fs";
 import { ethers, network } from "hardhat";
 import { Overrides, utils, BigNumber } from "ethers";
 
-import { verifyContract, wait } from "./utils";
 import { DeploymentStateType, FixedSwapDeploymentType } from "./types";
+import { wait } from "./utils";
 
 const { provider } = ethers;
-
-async function deployFixedSwap(
-  key: string,
-  forwardAddress: string,
-  busdAddress: string,
-  deploymentState: DeploymentStateType,
-  constructorArgs: FixedSwapDeploymentType,
-  overrides: Overrides & { from?: string | Promise<string> }
-) {
-  const FixedSwapFactory = await ethers.getContractFactory("FixedSwap");
-
-  console.log(`\nDeploying FixedSwap with ERC20:${forwardAddress}...`);
-  const fixedSwap = await FixedSwapFactory.deploy(
-    busdAddress,
-    forwardAddress,
-    constructorArgs.tradeValue,
-    constructorArgs.tokensForSale,
-    constructorArgs.startDate,
-    constructorArgs.endDate,
-    constructorArgs.individualMinimumAmount,
-    constructorArgs.individualMaximumAmount,
-    constructorArgs.isTokenSwapAtomic,
-    constructorArgs.minimumRaise,
-    18,
-    constructorArgs.hasWhitelisting,
-    overrides
-  );
-
-  await fixedSwap.deployed();
-  console.log(`Deployed FixedSwap at ${fixedSwap.address}...`);
-
-  deploymentState[key] = {
-    abi: "FixedSwap",
-    address: fixedSwap.address,
-  };
-
-  // console.log("waiting for 30s");
-  // await wait(30 * 1000);
-
-  // console.log("verify", fixedSwap.address, Object.values(constructorArgs));
-  // await verifyContract(fixedSwap.address, Object.values(constructorArgs));
-}
 
 async function fundFixedSwap(
   key: string,
@@ -64,15 +22,18 @@ async function fundFixedSwap(
   // console.log(`\nApproving ERC20:${erc20.address} to fund FixedSwap:${fixedSwap.address}...`);
   // await erc20.approve(fixedSwap.address, constructorArgs.tokensForSale, overrides);
 
-  // console.log(`Funding ERC20:${erc20.address} to fund FixedSwap:${fixedSwap.address}...`);
-  // await fixedSwap.fund(constructorArgs.tokensForSale, overrides);
+  console.log(`Funding ERC20:${erc20.address} to fund FixedSwap:${fixedSwap.address}...`);
+  await fixedSwap.fund(constructorArgs.tokensForSale, overrides);
+  await wait(5 * 1000);
 }
 
 async function main() {
-  const deploymentState: DeploymentStateType = {};
   const gasLimit = BigNumber.from(`6000000`).mul(15).div(10);
   const estimateGasPrice = await provider.getGasPrice();
   const gasPrice = estimateGasPrice.mul(2);
+
+  const state = fs.readFileSync(`./output/${network.name}.json`);
+  const deploymentState: any = JSON.parse(state.toString());
 
   console.log(`\nBeginnning Testnet Deployment script on network ${network.name}...\n`);
 
@@ -150,27 +111,11 @@ async function main() {
   ];
 
   for (const fixedSwapConfig of fixedSwapsConfig) {
-    await deployFixedSwap(
-      fixedSwapConfig.key,
-      fixedSwapConfig.token,
-      fixedSwapConfig.inputToken,
-      deploymentState,
-      fixedSwapConfig.fixedSwap,
-      {
-        gasPrice,
-        gasLimit,
-      }
-    );
-
     await fundFixedSwap(fixedSwapConfig.key, fixedSwapConfig.token, deploymentState, fixedSwapConfig.fixedSwap, {
       gasPrice,
       gasLimit,
     });
   }
-
-  console.log(`\nWriting deployments to output file...`);
-  const deploymentStateJSON = JSON.stringify(deploymentState, null, 2);
-  fs.writeFileSync(`./output/${network.name}.json`, deploymentStateJSON);
 }
 
 main().catch((error) => {
