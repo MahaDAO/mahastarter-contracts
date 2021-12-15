@@ -55,3 +55,5 @@ const isChecksumAddress = function (address: string) {
   }
   return true;
 };
+
+export const wait = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

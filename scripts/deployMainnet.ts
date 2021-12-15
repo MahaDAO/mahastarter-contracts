@@ -4,22 +4,25 @@ import * as fs from "fs";
 import { ethers, network } from "hardhat";
 import { Overrides, utils, BigNumber } from "ethers";
 
+import { verifyContract } from "./utils";
 import { DeploymentStateType, FixedSwapDeploymentType } from "./types";
 
 const { provider } = ethers;
 
 async function deployFixedSwap(
   key: string,
-  tokenAddress: string,
+  forwardAddress: string,
+  busdAddress: string,
   deploymentState: DeploymentStateType,
   constructorArgs: FixedSwapDeploymentType,
   overrides: Overrides & { from?: string | Promise<string> }
 ) {
   const FixedSwapFactory = await ethers.getContractFactory("FixedSwap");
 
-  console.log(`\nDeploying FixedSwap with ERC20:${tokenAddress}...`);
+  console.log(`\nDeploying FixedSwap with ERC20:${forwardAddress}...`);
   const fixedSwap = await FixedSwapFactory.deploy(
-    tokenAddress,
+    busdAddress,
+    forwardAddress,
     constructorArgs.tradeValue,
     constructorArgs.tokensForSale,
     constructorArgs.startDate,
@@ -40,23 +43,26 @@ async function deployFixedSwap(
     abi: "FixedSwap",
     address: fixedSwap.address,
   };
+
+  console.log("verify", fixedSwap.address, Object.values(constructorArgs));
+  await verifyContract(fixedSwap.address, Object.values(constructorArgs));
 }
 
 async function fundFixedSwap(
   key: string,
-  tokenAddress: string,
+  forwardAddress: string,
   deploymentState: DeploymentStateType,
   constructorArgs: FixedSwapDeploymentType,
   overrides: Overrides & { from?: string | Promise<string> }
 ) {
   const fixedSwap = await ethers.getContractAt("FixedSwap", deploymentState[key].address);
-  const erc20 = await ethers.getContractAt("MockERC20", tokenAddress);
+  const erc20 = await ethers.getContractAt("MockERC20", forwardAddress);
 
   console.log(`\nApproving ERC20:${erc20.address} to fund FixedSwap:${fixedSwap.address}...`);
   await erc20.approve(fixedSwap.address, constructorArgs.tokensForSale, overrides);
 
-  console.log(`Funding ERC20:${erc20.address} to fund FixedSwap:${fixedSwap.address}...`);
-  await fixedSwap.fund(constructorArgs.tokensForSale, overrides);
+  // console.log(`Funding ERC20:${erc20.address} to fund FixedSwap:${fixedSwap.address}...`);
+  // await fixedSwap.fund(constructorArgs.tokensForSale, overrides);
 }
 
 async function main() {
@@ -67,37 +73,72 @@ async function main() {
 
   console.log(`\nBeginnning Testnet Deployment script on network ${network.name}...\n`);
 
-  const sclpTokenAddress = "0xF2c96E402c9199682d5dED26D3771c6B192c01af";
+  const busd = "0xe9e7cea3dedca5984780bafc599bd69add087d56";
+  const forward = "0x886640149E31E1430FA74Cc39725431eb82ddFB2";
 
-  const startDate = new Date("October 27, 2021 15:00:00 UTC");
-  const endDate = new Date("October 28, 2021 11:15:00 UTC");
+  const startDate = new Date("December 15, 2021 15:00:00 UTC").getTime();
+  const endDate = new Date("January 2, 2022 15:15:00 UTC").getTime();
 
-  const fixedSwapsConfig: { key: string; token: string; fixedSwap: FixedSwapDeploymentType }[] = [
+  const fixedSwapsConfig: { key: string; token: string; inputToken: string; fixedSwap: FixedSwapDeploymentType }[] = [
     {
-      key: "SCLPscallopFixedSwap",
-      token: "SCLP",
+      key: "FORWARDPublicSale",
+      token: forward,
+      inputToken: busd,
       fixedSwap: {
-        tradeValue: utils.parseEther(`1`).mul(8259911894).div(1e10).div(1e3),
-        tokensForSale: utils.parseEther(`1`).mul(373333),
-        startDate: BigNumber.from(`${Math.floor(startDate.getTime() / 1000)}`),
-        endDate: BigNumber.from(`${Math.floor(endDate.getTime() / 1000)}`),
+        tradeValue: utils.parseEther(`1`).mul(2).div(1e2),
+        tokensForSale: utils.parseEther(`1`).mul(1000000),
+        startDate: BigNumber.from(`${Math.floor(startDate / 1000)}`),
+        endDate: BigNumber.from(`${Math.floor(endDate / 1000)}`),
         individualMinimumAmount: BigNumber.from(0),
-        individualMaximumAmount: BigNumber.from("300000000000000000000").mul(1000).div(375),
+        individualMaximumAmount: BigNumber.from("60").mul("1000000000000000000").mul(1000).div(20),
         isTokenSwapAtomic: false,
         minimumRaise: utils.parseEther(`0`),
         hasWhitelisting: true,
       },
     },
     {
-      key: "SCLPscallopmahaxFixedSwap",
-      token: "SCLP",
+      key: "FORWARDMahaXT1Sale",
+      token: forward,
+      inputToken: busd,
       fixedSwap: {
-        tradeValue: utils.parseEther(`1`).mul(8259911894).div(1e10).div(1e3),
-        tokensForSale: utils.parseEther(`1`).mul(190000),
-        startDate: BigNumber.from(`${Math.floor(startDate.getTime() / 1000)}`),
-        endDate: BigNumber.from(`${Math.floor(endDate.getTime() / 1000)}`),
+        tradeValue: utils.parseEther(`1`).mul(2).div(1e2),
+        tokensForSale: utils.parseEther(`1`).mul(1750000),
+        startDate: BigNumber.from(`${Math.floor(startDate / 1000)}`),
+        endDate: BigNumber.from(`${Math.floor(endDate / 1000)}`),
         individualMinimumAmount: BigNumber.from(0),
-        individualMaximumAmount: BigNumber.from("750000000000000000000").mul(1000).div(375),
+        individualMaximumAmount: BigNumber.from("300").mul("1000000000000000000").mul(1000).div(20),
+        isTokenSwapAtomic: false,
+        minimumRaise: utils.parseEther(`0`),
+        hasWhitelisting: true,
+      },
+    },
+    {
+      key: "FORWARDMahaXT2Sale",
+      token: forward,
+      inputToken: busd,
+      fixedSwap: {
+        tradeValue: utils.parseEther(`1`).mul(2).div(1e2),
+        tokensForSale: utils.parseEther(`1`).mul(1750000),
+        startDate: BigNumber.from(`${Math.floor(startDate / 1000)}`),
+        endDate: BigNumber.from(`${Math.floor(endDate / 1000)}`),
+        individualMinimumAmount: BigNumber.from(0),
+        individualMaximumAmount: BigNumber.from("160").mul("1000000000000000000").mul(1000).div(20),
+        isTokenSwapAtomic: false,
+        minimumRaise: utils.parseEther(`0`),
+        hasWhitelisting: true,
+      },
+    },
+    {
+      key: "FORWARDSquareUp",
+      token: forward,
+      inputToken: busd,
+      fixedSwap: {
+        tradeValue: utils.parseEther(`1`).mul(2).div(1e2),
+        tokensForSale: utils.parseEther(`1`).mul(500000),
+        startDate: BigNumber.from(`${Math.floor(startDate / 1000)}`),
+        endDate: BigNumber.from(`${Math.floor(endDate / 1000)}`),
+        individualMinimumAmount: BigNumber.from(0),
+        individualMaximumAmount: BigNumber.from("131").mul("1000000000000000000").mul(1000).div(20),
         isTokenSwapAtomic: false,
         minimumRaise: utils.parseEther(`0`),
         hasWhitelisting: true,
@@ -106,12 +147,19 @@ async function main() {
   ];
 
   for (const fixedSwapConfig of fixedSwapsConfig) {
-    await deployFixedSwap(fixedSwapConfig.key, sclpTokenAddress, deploymentState, fixedSwapConfig.fixedSwap, {
-      gasPrice,
-      gasLimit,
-    });
+    await deployFixedSwap(
+      fixedSwapConfig.key,
+      fixedSwapConfig.token,
+      fixedSwapConfig.inputToken,
+      deploymentState,
+      fixedSwapConfig.fixedSwap,
+      {
+        gasPrice,
+        gasLimit,
+      }
+    );
 
-    await fundFixedSwap(fixedSwapConfig.key, sclpTokenAddress, deploymentState, fixedSwapConfig.fixedSwap, {
+    await fundFixedSwap(fixedSwapConfig.key, fixedSwapConfig.token, deploymentState, fixedSwapConfig.fixedSwap, {
       gasPrice,
       gasLimit,
     });
