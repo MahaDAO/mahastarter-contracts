@@ -103,68 +103,68 @@ async function main() {
   }
 
   const startDate = Date.now() + 10 * 60 * 1000;
-  const endDate = Date.now() + 20 * 60 * 1000;
+  const endDate = Date.now() + 30 * 60 * 1000;
 
   const fixedSwapsConfig: { key: string; token: string; inputToken: string; fixedSwap: FixedSwapDeploymentType }[] = [
     {
-      key: "FORWARDPublicSale",
+      key: "FORWARDforwardFixedSwap", // Public sale.
       token: "FORWARD",
       inputToken: "BUSD",
       fixedSwap: {
         tradeValue: utils.parseEther(`1`).mul(2).div(1e2),
-        tokensForSale: utils.parseEther(`1`).mul(1500000),
+        tokensForSale: utils.parseEther(`1`).mul(1000000),
         startDate: BigNumber.from(`${Math.floor(startDate / 1000)}`),
         endDate: BigNumber.from(`${Math.floor(endDate / 1000)}`),
         individualMinimumAmount: BigNumber.from(0),
-        individualMaximumAmount: BigNumber.from("60").mul("1000000000000000000").mul(1000).div(20),
+        individualMaximumAmount: utils.parseEther(`1`).mul(50).mul(100).div(2),
         isTokenSwapAtomic: false,
         minimumRaise: utils.parseEther(`0`),
         hasWhitelisting: true,
       },
     },
     {
-      key: "FORWARDMahaXT1Sale",
+      key: "FORWARDforwardmahaxFixedSwap", // T1.
       token: "FORWARD",
       inputToken: "BUSD",
       fixedSwap: {
         tradeValue: utils.parseEther(`1`).mul(2).div(1e2),
-        tokensForSale: utils.parseEther(`1`).mul(2500000),
+        tokensForSale: utils.parseEther(`1`).mul(1750000),
         startDate: BigNumber.from(`${Math.floor(startDate / 1000)}`),
         endDate: BigNumber.from(`${Math.floor(endDate / 1000)}`),
         individualMinimumAmount: BigNumber.from(0),
-        individualMaximumAmount: BigNumber.from("300").mul("1000000000000000000").mul(1000).div(20),
+        individualMaximumAmount: utils.parseEther(`1`).mul(300).mul(100).div(2),
         isTokenSwapAtomic: false,
         minimumRaise: utils.parseEther(`0`),
         hasWhitelisting: true,
       },
     },
     {
-      key: "FORWARDMahaXT2Sale",
+      key: "FORWARDforwardmahax2FixedSwap", // T2.
       token: "FORWARD",
       inputToken: "BUSD",
       fixedSwap: {
         tradeValue: utils.parseEther(`1`).mul(2).div(1e2),
-        tokensForSale: utils.parseEther(`1`).mul(2500000),
+        tokensForSale: utils.parseEther(`1`).mul(1750000),
         startDate: BigNumber.from(`${Math.floor(startDate / 1000)}`),
         endDate: BigNumber.from(`${Math.floor(endDate / 1000)}`),
         individualMinimumAmount: BigNumber.from(0),
-        individualMaximumAmount: BigNumber.from("160").mul("1000000000000000000").mul(1000).div(20),
+        individualMaximumAmount: utils.parseEther(`1`).mul(160).mul(100).div(2),
         isTokenSwapAtomic: false,
         minimumRaise: utils.parseEther(`0`),
         hasWhitelisting: true,
       },
     },
     {
-      key: "FORWARDSquareUp",
+      key: "FORWARDforwardsquareupFixedSwap", // Square up.
       token: "FORWARD",
       inputToken: "BUSD",
       fixedSwap: {
         tradeValue: utils.parseEther(`1`).mul(2).div(1e2),
-        tokensForSale: utils.parseEther(`1`).mul(1500000),
+        tokensForSale: utils.parseEther(`1`).mul(500000),
         startDate: BigNumber.from(`${Math.floor(startDate / 1000)}`),
         endDate: BigNumber.from(`${Math.floor(endDate / 1000)}`),
         individualMinimumAmount: BigNumber.from(0),
-        individualMaximumAmount: BigNumber.from("131").mul("1000000000000000000").mul(1000).div(20),
+        individualMaximumAmount: utils.parseEther(`1`).mul(131).mul(100).div(2),
         isTokenSwapAtomic: false,
         minimumRaise: utils.parseEther(`0`),
         hasWhitelisting: true,
