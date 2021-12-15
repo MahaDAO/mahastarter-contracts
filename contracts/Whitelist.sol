@@ -25,9 +25,10 @@ contract Whitelist is Ownable {
 
     function add(address[] memory _addresses) public onlyOwner {
         for (uint256 i = 0; i < _addresses.length; i++) {
-            require(whitelist[_addresses[i]] != true, "already whitelisted");
-            whitelist[_addresses[i]] = true;
-            whitelistedAddresses.push(_addresses[i]);
+            if (whitelist[_addresses[i]] != true) {
+                whitelist[_addresses[i]] = true;
+                whitelistedAddresses.push(_addresses[i]);
+            }
         }
         emit AddedToWhitelist(_addresses);
     }
